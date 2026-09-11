@@ -1,0 +1,4 @@
+name = "nordic-trip"
+compatibility_date = "2025-09-01"
+# 纯静态站点：把仓库根目录的 index.html 作为静态资源发布
+assets = { directory = "./" }
