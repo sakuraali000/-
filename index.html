@@ -122,6 +122,26 @@
   .floatnav a{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;
     align-items:center;justify-content:center;font-size:18px;box-shadow:var(--shadow);border:2px solid var(--bg2)}
   @media(min-width:600px){.tips{grid-template-columns:1fr 1fr}.item .tm{flex-basis:72px}}
+
+  /* 景点卡片（图+简介） */
+  .spot{display:flex;gap:10px;margin:4px 0 2px;align-items:flex-start}
+  .spot img{width:96px;height:72px;object-fit:cover;border-radius:10px;flex:0 0 96px;background:var(--soft);border:1px solid var(--line)}
+  .spot .si{font-size:12.5px;color:var(--muted);line-height:1.5}
+  /* 每日折叠 */
+  .day .dhead{cursor:pointer}
+  .day .chev{display:inline-block;transition:transform .2s;margin-right:2px}
+  .day.collapsed .chev{transform:rotate(-90deg)}
+  .day.collapsed .body{display:none}
+  .day .transport{display:none;flex-wrap:wrap;gap:8px;padding:8px 4px 2px}
+  .day.show-trans .transport{display:flex}
+  .transport a{background:var(--accent2);color:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600}
+  /* 天气卡片 */
+  .weather{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#5b9bd5,#7ec8e3);color:#06304a;border-radius:12px;padding:9px 12px;margin:4px 4px 10px;font-size:13px}
+  [data-theme="dark"] .weather{color:#e6f4fb}
+  .weather .ico{font-size:26px;line-height:1}
+  .weather .wt{font-weight:700}
+  .weather .wf{font-size:12px;opacity:.92;margin-top:1px}
+  .weather .wnote{font-size:11px;opacity:.75;margin-left:auto;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -271,7 +291,7 @@ const C={
   selj:[63.6150,-19.9900], skog:[63.5320,-19.5110],   vik:[63.4060,-19.0440],
   hvol:[63.7440,-20.2300], thing:[64.2550,-21.1300], geys:[64.3150,-20.3000], gull:[64.3270,-20.1200],
   bru:[64.3300,-20.5000], kerid:[63.8950,-20.3300], silfra:[64.2550,-21.1100],
-  theDock:[69.6470,18.9550], moxy:[69.6500,18.9600], waw:[52.2290,21.0110], bkk:[13.6900,100.7500]
+  theDock:[69.6470,18.9550], moxy:[69.6500,18.9600], waw:[52.2290,21.0110], bkk:[13.6900,100.7500], tfu:[30.3130,104.4420]
 };
 
 const HOTELS=[
@@ -438,10 +458,96 @@ const DAYS=[
   map:[{n:'BKK',lat:13.6900,lng:100.7500},{n:'TFU',lat:30.3130,lng:104.4420}],
   items:[
    {t:'上午',tz:'曼谷',tzn:'Asia/Bangkok',ti:'曼谷转机休整',nav:C.bkk,de:'机场内等待。'},
-   {t:'18:05',tz:'曼谷',tzn:'Asia/Bangkok',ti:'航班 3U3936 → 成都',nav:C.kef,de:'曼谷BKK起飞。'},
-   {t:'22:10',tz:'成都',tzn:'Asia/Shanghai',ti:'抵达成都天府 TFU',nav:C.osloA,de:'旅程圆满结束 🎉'}
+   {t:'18:05',tz:'曼谷',tzn:'Asia/Bangkok',ti:'航班 3U3936 → 成都',nav:C.tfu,de:'曼谷BKK起飞。'},
+   {t:'22:10',tz:'成都',tzn:'Asia/Shanghai',ti:'抵达成都天府 TFU',nav:C.tfu,de:'旅程圆满结束 🎉'}
   ]}
 ];
+
+/* 景点增强：图片(Wikipedia 条目) + 简介，键为 "天号:item序号" */
+const SPOTS={
+  '1:0':{wiki:'Oslo Airport, Gardermoen',intro:'挪威最大机场，位于奥斯陆东北约 50 公里，连通欧洲多城。'},
+  '1:1':{intro:'酒店就在机场旁，步行/短驳可达，省去进城奔波。'},
+  '2:0':{wiki:'Harstad/Narvik Airport, Evenes',intro:'北极圈内的 Evenes 机场，去罗弗敦/韦斯特龙的空中门户。'},
+  '2:1':{wiki:'Svolvær',intro:'罗弗敦的“首府”，彩色渔屋与陡峭山峰相映。'},
+  '2:2':{intro:'Avis 取车点，大众 ID.3 纯电，门店 15:00 关。'},
+  '2:3':{wiki:'Stokmarknes',intro:'韦斯特龙的港口小镇，也是 Hurtigruten 邮轮的发源地。'},
+  '2:4':{wiki:'Hurtigruten Museum',intro:'停泊的 M/S Finnmarken 老邮轮，讲述海岸航线百年史。'},
+  '3:0':{wiki:'Nyksund',intro:'废弃渔村，风景公路尽头的海岸秘境，人少景野。'},
+  '3:1':{wiki:'Andenes',intro:'Andøya 岛北端，欧洲最佳观鲸点之一（9 月底仍有抹香鲸）。'},
+  '3:2':{wiki:'Sortland',intro:'“蓝色小镇”，跨海大桥与海岸风光，顺路补货充电。'},
+  '3:3':{wiki:'Stokmarknes',intro:'韦斯特龙秋夜光害低，留意极光。'},
+  '4:0':{wiki:'Svolvær',intro:'途经 Svolværgeita 山尖、Magic Ice 冰雪酒吧。'},
+  '4:1':{intro:'锁车投钥匙箱，务必 14:30 前完成。'},
+  '4:2':{wiki:'Hurtigruten',intro:'沿挪威海岸航行的经典邮轮，一晚抵达特罗姆瑟。'},
+  '4:3':{wiki:'Lofoten',intro:'邮轮经罗弗敦海峡北行，甲板可赏景/极光。'},
+  '5:0':{wiki:'Tromsø',intro:'北极圈内名城，号称“北极首都”。'},
+  '5:1':{wiki:'Polaria',intro:'北极水族馆，海豹与北极生态展示。'},
+  '5:2':{wiki:'Polar Museum (Tromsø)',intro:'极地探险与狩猎历史博物馆。'},
+  '6:0':{wiki:'Fjellheisen',intro:'城市缆车，登顶俯瞰峡湾，夜间是极光观测点。'},
+  '6:1':{wiki:'Tromsø',intro:'补漏 Polaria / Polarmuseet 等。'},
+  '6:2':{wiki:'Aurora',intro:'极光（Aurora），秋夜晴朗时可见于北极圈。'},
+  '7:0':{wiki:'Arctic Cathedral',intro:'特罗姆瑟地标，三角冰山造型。'},
+  '7:3':{wiki:'Aurora',intro:'极光（Aurora），最后一夜留意。'},
+  '8:0':{wiki:'Oslo Airport, Gardermoen',intro:'奥斯陆枢纽机场，中转地。'},
+  '8:1':{wiki:'Oslo Airport, Gardermoen',intro:'机场内用餐、休整，约 6.5 小时中转。'},
+  '8:2':{wiki:'Copenhagen Airport',intro:'哥本哈根门户机场。'},
+  '8:3':{wiki:'Nyhavn',intro:'新港运河畔的彩房老码头，散步绝佳。'},
+  '9:0':{wiki:'Keflavík International Airport',intro:'冰岛主机场，租车与离港都在这里。'},
+  '9:1':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
+  '9:2':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
+  '9:3':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
+  '9:4':{wiki:'Aurora',intro:'极光（Aurora），近郊光害更低。'},
+  '10:0':{wiki:'Ring Road (Iceland)',intro:'冰岛 1 号环岛公路，南岸风光主线。'},
+  '10:1':{wiki:'Seljalandsfoss',intro:'可从水帘后方穿行的瀑布。'},
+  '10:2':{wiki:'Skógafoss',intro:'宽瀑，登阶上顶俯瞰。'},
+  '10:3':{wiki:'Reynisfjara',intro:'黑沙滩与玄武岩柱，海浪凶险，远离浪线。'},
+  '10:4':{wiki:'Eyjafjallajökull',intro:'邻近 2010 年喷发致欧洲空运瘫痪的火山。'},
+  '11:0':{wiki:'Þingvellir',intro:'板块裂谷，联合国教科文世界遗产。'},
+  '11:1':{wiki:'Geysir',intro:'Strokkur 间歇泉，每隔几分钟喷发一次。'},
+  '11:2':{wiki:'Gullfoss',intro:'双层黄金瀑布，水雾弥漫。'},
+  '11:3':{wiki:'Golden Circle (Iceland)',intro:'黄金圈，冰岛最经典一日游线路。'},
+  '11:4':{wiki:'Silfra',intro:'板块大裂缝浮潜，水质极清，需提前预约。'},
+  '12:0':{wiki:'Golden Circle (Iceland)',intro:'黄金圈乡村，退房南行。'},
+  '12:1':{wiki:'Kerið',intro:'火山口湖，红岩碧水。'},
+  '12:2':{wiki:'Keflavík International Airport',intro:'Europcar 还车点，可早还。'},
+  '12:3':{wiki:'Keflavík International Airport',intro:'LO500 00:45 起飞，当晚在 KEF/飞机上过夜。'},
+  '13:0':{wiki:'Keflavík International Airport',intro:'雷克雅未克出发，夜飞。'},
+  '13:1':{wiki:'Warsaw Chopin Airport',intro:'华沙中转，续飞曼谷。'},
+  '14:0':{wiki:'Suvarnabhumi Airport',intro:'曼谷素万那普机场，转机休整。'},
+  '14:1':{wiki:'Chengdu Tianfu International Airport',intro:'成都天府国际机场 T1。'},
+  '14:2':{wiki:'Chengdu Tianfu International Airport',intro:'旅程圆满结束 🎉'}
+};
+/* 每天交通跳转链接（键为天号） */
+const TRANSPORT={
+  2:[{label:'✈ Norwegian (DY360)',url:'https://www.norwegian.com'},{label:'🚌 NOR-WAY 巴士',url:'https://www.nor-way.no'},{label:'🚗 Avis 取车',url:'https://www.avis.com'}],
+  4:[{label:'🚗 Avis 还车',url:'https://www.avis.com'},{label:'🚢 Hurtigruten 邮轮',url:'https://www.hurtigruten.com'}],
+  6:[{label:'🚡 Fjellheisen 缆车',url:'https://fjellheisen.no'}],
+  7:[{label:'✈ SAS (SK4411/SK1477)',url:'https://www.flysas.com'}],
+  8:[{label:'✈ SAS (SK2595)',url:'https://www.flysas.com'},{label:'🚗 Europcar 取车',url:'https://www.europcar.com'}],
+  9:[{label:'🚗 Europcar 自驾',url:'https://www.europcar.com'}],
+  10:[{label:'🚗 Europcar 自驾',url:'https://www.europcar.com'}],
+  11:[{label:'🚗 Europcar 还车',url:'https://www.europcar.com'},{label:'✈ LOT (LO500)',url:'https://www.lot.com'}],
+  12:[{label:'✈ LOT (LO500/LO065)',url:'https://www.lot.com'}],
+  13:[{label:'✈ LOT (LO065)',url:'https://www.lot.com'}],
+  14:[{label:'✈ 四川航空 (3U3936)',url:'https://www.sichuanair.com'}]
+};
+/* 每天天气：坐标 + 手动预计（实时超出预报窗口或离线时降级） */
+const WEATHER={
+  1:{lat:60.1976,lng:11.1002,exp:'约 8–13°C，多云偶有阵雨，体感凉，备薄外套。'},
+  2:{lat:68.5689,lng:15.0167,exp:'约 7–11°C，海风大、阴雨多，备防风防水外层。'},
+  3:{lat:68.5689,lng:15.0167,exp:'约 7–11°C，海风大、阴雨多，备防风防水外层。'},
+  4:{lat:69.6492,lng:18.9553,exp:'约 6–10°C，邮轮夜航海上风大，注意保暖。'},
+  5:{lat:69.6492,lng:18.9553,exp:'约 4–9°C，北极秋，可能初雪，风大。'},
+  6:{lat:69.6492,lng:18.9553,exp:'约 4–9°C，北极秋，夜间留意极光。'},
+  7:{lat:69.6492,lng:18.9553,exp:'约 4–8°C，上午特罗姆瑟，夜间转哥本哈根。'},
+  8:{lat:55.6761,lng:12.5640,exp:'约 10–14°C，多云阵雨，哥本哈根秋凉。'},
+  9:{lat:64.1180,lng:-21.8500,exp:'约 6–10°C，风大多变，备雨具。'},
+  10:{lat:63.7440,lng:-20.2300,exp:'约 5–9°C，南岸多变，瀑布区水雾大。'},
+  11:{lat:64.3300,lng:-20.5000,exp:'约 3–8°C，黄金圈清晨冷，可能霜。'},
+  12:{lat:63.9850,lng:-22.6050,exp:'约 5–9°C，KEF 海风大，夜晚航班。'},
+  13:{lat:63.9850,lng:-22.6050,exp:'约 5–9°C，冰岛秋凉，转机日。'},
+  14:{lat:30.3130,lng:104.4420,exp:'成都约 18–24°C 秋凉；曼谷约 28–33°C 湿热（中转）。'}
+};
 
 const TODO=[
   '办好申根签证（挪威/冰岛均可，注意总停留天数不超过签证许可）',
@@ -631,32 +737,53 @@ function renderDays(){
     const col=PALETTE[day.color];
     const wd=weekday(day.y,day.mo,day.d);
     const dateStr=day.y+'.'+day.mo+'.'+day.d;
+    const dayNum=idx+1;
+    // 天气卡片（先显示预计，加载后替换）
+    const w=WEATHER[dayNum];
+    let weatherHTML='';
+    if(w){ weatherHTML='<div class="weather" id="wx'+idx+'">'+wxHTML('⏳','当地天气加载中…',w.exp,'')+'</div>'; }
+    // 交通条
+    const tr=TRANSPORT[dayNum]||[];
+    let transHTML=tr.length?'<div class="transport" id="tr'+idx+'">'+tr.map(t=>'<a href="'+t.url+'" target="_blank" rel="noopener">'+t.label+'</a>').join('')+'</div>':'';
     let items='';
-    for(const it of day.items){
-      let tm=it.t;
-      let tzSpan='';
-      if(it.tz){ tzSpan='<span class="tz">'+it.tz+'</span>'; }
-      let badge=it.book?'<span class="badge">需预约</span>':'';
+    day.items.forEach((it,i)=>{
+      const sp=SPOTS[dayNum+':'+i]||{};
+      const tm=it.t;
+      const tzSpan=it.tz?'<span class="tz">'+it.tz+'</span>':'';
+      const badge=it.book?'<span class="badge">需预约</span>':'';
+      let spot='';
+      if(sp.wiki){ spot='<div class="spot"><img id="sp'+idx+'_'+i+'" alt="'+it.ti+'" loading="lazy" onerror="this.style.display=\'none\'"><div class="si">'+(sp.intro||'')+'</div></div>'; }
+      else if(sp.intro){ spot='<div class="spot"><div class="si">'+sp.intro+'</div></div>'; }
       let de='<div class="de">'+it.de;
       if(it.nav) de+=' '+pinHTML('导航',it.nav);
       de+='</div>';
-      items+='<div class="item"><div class="tm">'+tm+tzSpan+'</div><div class="ct"><div class="ti">'+placeLink(it.ti,it.nav)+badge+'</div>'+de+'</div></div>';
-    }
-    // 当日地图
+      items+='<div class="item"><div class="tm">'+tm+tzSpan+'</div><div class="ct"><div class="ti">'+placeLink(it.ti,it.nav)+badge+'</div>'+spot+de+'</div></div>';
+    });
     const dm=buildDayMap(day,col);
     const navU=gDay(day.map);
-    h+='<div class="day">';
-    h+='<div class="dhead" style="background:linear-gradient(135deg,'+col+','+shade(col)+')">';
-    h+='<div><div class="dn">第 '+(idx+1)+' 天 · '+dateStr+' '+wd+'</div><div class="dd">'+day.sum+'</div></div>';
+    const transBtn=tr.length?'<button class="maptoggle" onclick="event.stopPropagation();toggleTrans('+idx+')">🚌 交通</button>':'';
+    h+='<div class="day" id="day'+idx+'">';
+    h+='<div class="dhead" style="background:linear-gradient(135deg,'+col+','+shade(col)+')" onclick="toggleDayCollapse('+idx+')">';
+    h+='<div><div class="dn"><span class="chev">▾</span>第 '+dayNum+' 天 · '+dateStr+' '+wd+'</div><div class="dd">'+day.sum+'</div></div>';
     h+='<div style="display:flex;align-items:center;gap:6px"><span class="stay">🛏 '+day.stay+'</span>'+
-       '<button class="maptoggle" onclick="toggleDay('+idx+')">📍 今日路线</button></div>';
+       '<button class="maptoggle" onclick="event.stopPropagation();toggleDayMap('+idx+')">📍 路线</button>'+transBtn+'</div>';
     h+='</div>';
-    h+='<div class="body"><div class="summary">'+day.sum+'</div>'+items+
+    h+='<div class="body">'+weatherHTML+transHTML+'<div class="summary">'+day.sum+'</div>'+items+
        '<div class="daymap" id="dm'+idx+'" style="display:none">'+dm+
        '<a class="navbtn" href="'+navU+'" target="_blank" rel="noopener">🧭 一键打开全天导航</a></div>';
     h+='</div></div>';
   });
   document.getElementById('days').innerHTML=h;
+  // 异步加载景点图片与天气
+  DAYS.forEach((day,idx)=>{
+    const dayNum=idx+1;
+    day.items.forEach((it,i)=>{
+      const sp=SPOTS[dayNum+':'+i];
+      if(sp&&sp.wiki){ const el=document.getElementById('sp'+idx+'_'+i); if(el) loadWikiImg(el,sp.wiki); }
+    });
+    const w=WEATHER[dayNum];
+    if(w) fetchWeather(idx,w);
+  });
 }
 function buildDayMap(day,col){
   const W=620,H=170, n=day.map.length;
@@ -679,7 +806,41 @@ function buildDayMap(day,col){
   svg+='</svg>';
   return svg;
 }
-function toggleDay(i){ const el=document.getElementById('dm'+i); el.style.display=(el.style.display==='none')?'block':'none'; }
+function toggleDayCollapse(i){ const el=document.getElementById('day'+i); if(el) el.classList.toggle('collapsed'); }
+function toggleDayMap(i){ const d=document.getElementById('day'+i); if(d) d.classList.remove('collapsed'); const el=document.getElementById('dm'+i); el.style.display=(el.style.display==='none')?'block':'none'; }
+function toggleTrans(i){ const d=document.getElementById('day'+i); if(d){ d.classList.remove('collapsed'); d.classList.toggle('show-trans'); } }
+async function loadWikiImg(el,title){
+  try{
+    const r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(title)+'?origin=*');
+    const j=await r.json();
+    if(j.thumbnail&&j.thumbnail.source){ el.src=j.thumbnail.source; }
+    else { el.style.display='none'; }
+  }catch(e){ el.style.display='none'; }
+}
+function wmo(c){const m={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',56:'🌨️',57:'🌨️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌨️',67:'🌨️',71:'🌨️',73:'❄️',75:'❄️',77:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'❄️',95:'⛈️',96:'⛈️',99:'⛈️'};return m[c]||'🌡️';}
+function wmoText(c){const m={0:'晴',1:'晴间多云',2:'局部多云',3:'阴',45:'雾',48:'雾凇',51:'小毛毛雨',53:'毛毛雨',55:'中毛毛雨',56:'冻雨',57:'冻雨',61:'小雨',63:'中雨',65:'大雨',66:'冻雨',67:'冻雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'阵雨',81:'阵雨',82:'强阵雨',85:'阵雪',86:'阵雪',95:'雷阵雨',96:'雷阵雨伴冰雹',99:'强雷暴'};return m[c]||'未知';}
+function wxHTML(ico,title,sub,note){ return '<span class="ico">'+ico+'</span><div><div class="wt">'+title+'</div><div class="wf">'+sub+'</div></div>'+(note?'<div class="wnote">'+note+'</div>':''); }
+async function fetchWeather(idx,w){
+  const el=document.getElementById('wx'+idx); if(!el) return;
+  const dateStr=DAYS[idx].y+'-'+String(DAYS[idx].mo).padStart(2,'0')+'-'+String(DAYS[idx].d).padStart(2,'0');
+  const today=new Date(); today.setHours(0,0,0,0);
+  const target=new Date(DAYS[idx].y,DAYS[idx].mo-1,DAYS[idx].d);
+  const diff=Math.round((target-today)/86400000);
+  if(diff>15||diff<0){ el.innerHTML=wxHTML('🌡️','预计天气',w.exp,'手动预计'); return; }
+  try{
+    const url='https://api.open-meteo.com/v1/forecast?latitude='+w.lat+'&longitude='+w.lng+'&daily=weather_code,temperature_2m_max,temperature_2m_min&current=temperature_2m,weather_code&timezone=auto&forecast_days=16';
+    const r=await fetch(url); const j=await r.json();
+    if(j&&j.daily&&j.daily.time){
+      const k=j.daily.time.indexOf(dateStr);
+      if(k>=0){
+        const cur=(diff===0&&j.current)?(' · 实时 '+Math.round(j.current.temperature_2m)+'°C'):'';
+        el.innerHTML=wxHTML(wmo(j.daily.weather_code[k]),(diff===0?'今日':'预报')+' '+Math.round(j.daily.temperature_2m_min[k])+'~'+Math.round(j.daily.temperature_2m_max[k])+'°C '+wmoText(j.daily.weather_code[k]),w.exp+cur,'Open-Meteo');
+        return;
+      }
+    }
+    throw new Error('no');
+  }catch(e){ el.innerHTML=wxHTML('🌡️','预计天气',w.exp,'实时需联网'); }
+}
 function shade(hex){
   // 简单加深用于渐变
   const c=hex.replace('#',''); const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
