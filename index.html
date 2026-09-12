@@ -142,6 +142,19 @@
   .weather .wt{font-weight:700}
   .weather .wf{font-size:12px;opacity:.92;margin-top:1px}
   .weather .wnote{font-size:11px;opacity:.75;margin-left:auto;white-space:nowrap}
+
+  /* 内联预订卡（可折叠） + 外部链接 */
+  .bkinfo{margin:6px 0 2px;border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}
+  .bkinfo .bkhead{padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--accent2)}
+  .bkinfo .chev{display:inline-block;transition:transform .2s}
+  .bkinfo.collapsed .chev{transform:rotate(-90deg)}
+  .bkinfo .bkbody{display:none;padding:4px 12px 10px;font-size:12.5px;color:var(--muted)}
+  .bkinfo:not(.collapsed) .bkbody{display:block}
+  .bkrow{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;padding:3px 0;border-top:1px dashed var(--line)}
+  .bkrow:first-child{border-top:none}
+  .bkrow b{color:var(--ink);font-weight:600;white-space:nowrap}
+  .web{display:inline-block;margin-top:5px;background:var(--accent2);color:#fff;border-radius:8px;padding:3px 9px;font-size:12px}
+  .web:hover{opacity:.9}
 </style>
 </head>
 <body>
@@ -156,7 +169,6 @@
   <div class="wrap">
     <a href="#focus">此刻关注</a>
     <a href="#map">总览地图</a>
-    <a href="#book">确认订单</a>
     <a href="#days">逐日行程</a>
     <a href="#todo">待办清单</a>
     <a href="#tips">实用贴士</a>
@@ -189,14 +201,9 @@
     <div class="maptip">手绘示意路线，按天着色；🛏 为当晚住宿点。点击任意地点可直接打开 Google 地图导航。地理比例非精确。</div>
   </div>
 
-  <!-- 3. 已确认订单 -->
-  <h2 class="sec"><span class="ic">📋</span>已确认订单</h2>
-  <div class="note">⚠️ 页面为公开网址，已隐去所有确认号 / 证件号 / 票号 / 房间号。地点均可点击唤起 Google 导航。</div>
-  <div id="book"></div>
-
-  <!-- 4. 逐日行程 -->
+  <!-- 3. 逐日行程 -->
   <h2 class="sec"><span class="ic">📅</span>逐日行程</h2>
-  <div class="note">左侧时间为<b>目的地当地时间</b>（已带时区，跨时区打开不会算错）。带 <span class="badge">需预约</span> 的是建议提前预订的项目。每天顶部可展开当日路线地图，并一键打开全天导航。</div>
+  <div class="note">左侧时间为<b>目的地当地时间</b>（已带时区，跨时区打开不会算错）。带 <span class="badge">需预约</span> 的是建议提前预订的项目。每天顶部可展开当日路线地图，并一键打开全天导航。已确认订单（机票/租车/酒店）已并入各行程条目下方，点击可展开详情。⚠️ 页面为公开网址，已隐去所有确认号 / 证件号 / 票号 / 房间号。</div>
   <div id="days"></div>
 
   <!-- 5. 待办清单 -->
@@ -291,18 +298,26 @@ const C={
   selj:[63.6150,-19.9900], skog:[63.5320,-19.5110],   vik:[63.4060,-19.0440],
   hvol:[63.7440,-20.2300], thing:[64.2550,-21.1300], geys:[64.3150,-20.3000], gull:[64.3270,-20.1200],
   bru:[64.3300,-20.5000], kerid:[63.8950,-20.3300], silfra:[64.2550,-21.1100],
-  theDock:[69.6470,18.9550], moxy:[69.6500,18.9600], waw:[52.2290,21.0110], bkk:[13.6900,100.7500], tfu:[30.3130,104.4420]
+  theDock:[69.6470,18.9550], moxy:[69.6500,18.9600], waw:[52.2290,21.0110], bkk:[13.6900,100.7500], tfu:[30.3130,104.4420],
+  ist:[41.2750,28.7519],
+  fiskebol:[68.2300,13.8500], melbu:[68.5100,14.8300],
+  leknes:[68.1500,13.6100], ramberg:[67.9050,13.0800], hamnoy:[67.8930,13.0800], sakrisoy:[67.8830,13.0750], reine:[67.9330,13.0900], aVillage:[67.8680,12.9800], fredvang:[68.0800,13.2100],
+  austnes:[68.2700,13.9500], kabelvag:[68.2100,14.4800], tivoli:[55.6738,12.5683], cityhall:[55.6756,12.5680]
 };
 
 const HOTELS=[
-  {name:'Clarion Hotel Oslo Airport',addr:'Hans Gaardervei 15, 2060 Gardermoen',tel:'',in:'9.25 入住（15:00后）',out:'9.26 退房',coord:C.osloA},
-  {name:'Quality Hotel Richard With',addr:'Havnegata 2, 8450 Stokmarknes（韦斯特龙 Vesterålen）',tel:'+47 75 99 06 00',in:'9.26 入住（15:00后）',out:'9.28 退房（12:00前）',coord:C.stok,flag:'⚠ 实际在 Stokmarknes，非 Svolvær（已无法改，行程已据此重排）'},
-  {name:'The Dock 69°39 by Scandic',addr:'Skansegata 7, Tromsø',tel:'+47 77 78 08 00',in:'9.29 入住（16:00后）',out:'10.1 退房（12:00前）',coord:C.theDock},
-  {name:'Moxy Tromsø',addr:'Huldervegen 2, 9016 Tromsø',tel:'+47 90 22 70 61',in:'10.1 入住（15:00后）',out:'10.2 退房（12:00前）',coord:C.moxy},
-  {name:'Cabinn City',addr:'Mitchellsgade 14, 1568 København',tel:'+45 33 46 16 00',in:'10.2 入住（15:00后）',out:'10.3 退房（08:00–11:00）',coord:C.cph},
-  {name:'Reykjavik Lights Hotel by Keahotels',addr:'Suðurlandsbraut 12, 108 Reykjavík',tel:'+354 513 9000',in:'10.3 入住（15:00后）',out:'10.4 退房（11:00前）',coord:C.rvk},
-  {name:'Hotel Eyjafjallajökull',addr:'Hvolsvöllur, 861 Southern Region',tel:'+354 487 8360',in:'10.4 入住（15:00–21:00）',out:'10.5 退房（08:00–11:00）',coord:C.hvol},
-  {name:'Hotel Brú countryside',addr:'Efri-Brú, Brúarholt, 805 Southern Region',tel:'+354 765 8805',in:'10.5 入住（15:00后）',out:'10.6 退房（11:00前）',coord:C.bru}
+  {name:'Clarion Hotel Oslo Airport',addr:'Hans Gaardervei 15, 2060 Gardermoen',tel:'+47 64 81 00 00',in:'9.25 入住（15:00后）',out:'9.26 退房',coord:C.osloA,
+    bf:'不含早（付费自助 NOK 265/人；周一–五 05:00–09:30、周末至 10:30 开）',
+    note:'距机场约 10 分钟；S44 穿梭巴士每 30 分钟一班（80 NOK，04:00–01:00）；前台 24h；房间可容 28 寸箱；宠物 NOK 300/只/次'},
+  {name:'Quality Hotel Richard With',addr:'Havnegata 2, 8450 Stokmarknes（韦斯特龙 Vesterålen）',tel:'+47 75 99 06 00',in:'9.26 入住（15:00后）',out:'9.28 退房（12:00前）',coord:C.stok,
+    bf:'含早（voucher 注明总价含早餐）',flag:'⚠ 实际在 Stokmarknes，非 Svolvær（已无法改，行程已据此重排）'},
+  {name:'The Dock 69°39 by Scandic',addr:'Skansegata 7, Tromsø',tel:'+47 77 78 08 00',in:'9.29 入住（16:00后）',out:'10.1 退房（12:00前）',coord:C.theDock,bf:'待确认'},
+  {name:'Moxy Tromsø',addr:'Huldervegen 2, 9016 Tromsø',tel:'+47 90 22 70 61',in:'10.1 入住（15:00后）',out:'10.2 退房（12:00前）',coord:C.moxy,bf:'待确认'},
+  {name:'Cabinn City',addr:'Mitchellsgade 14, 1568 København',tel:'+45 33 46 16 00',in:'10.2 入住（15:00后）',out:'10.3 退房（08:00–11:00）',coord:C.cph,
+    bf:'不含早（PDF 明确"无早餐"；次日极早班机，自备干粮）',note:'近中央车站；24h 前台'},
+  {name:'Reykjavik Lights Hotel by Keahotels',addr:'Suðurlandsbraut 12, 108 Reykjavík',tel:'+354 513 9000',in:'10.3 入住（15:00后）',out:'10.4 退房（11:00前）',coord:C.rvk,bf:'待确认'},
+  {name:'Hotel Eyjafjallajökull',addr:'Hvolsvöllur, 861 Southern Region',tel:'+354 487 8360',in:'10.4 入住（15:00–21:00）',out:'10.5 退房（08:00–11:00）',coord:C.hvol,bf:'待确认'},
+  {name:'Hotel Brú countryside',addr:'Efri-Brú, Brúarholt, 805 Southern Region',tel:'+354 765 8805',in:'10.5 入住（15:00后）',out:'10.6 退房（11:00前）',coord:C.bru,bf:'待确认'}
 ];
 const CARS=[
   {co:'Avis（主驾 Lili Zeng）',car:'大众 ID.3 纯电（或同组）· 自动 · 5座',
@@ -319,69 +334,105 @@ const FLIGHTS=[
     ['航段','SL933 天府TFU→曼谷BKK / TK059 曼谷→伊斯坦布尔IST / TK1753 伊斯坦布尔→奥斯陆OSL'],
     ['起飞','9.24 22:15（成都时间）'],
     ['抵达','9.25 17:50 奥斯陆OSL（奥斯陆时间）'],
-    ['航站楼','TFU T1 → OSL 国际到达']]},
+    ['航站楼','TFU T1 → OSL 国际到达']],
+    bag:'待确认（各航司标准不同，出发前查官网票规；泰国 Lion Air + 土耳其航空，建议各 1 件托运）',
+    chk:'国际长途，建议起飞前 3 小时到机场；提前 24–48h 在线值机',
+    note:'曼谷跨机场转场（DMK→BKK）走高速，预留 3.5–4h；伊斯坦布尔不出机场'},
   {tt:'挪威国内 · 奥斯陆→Evenes',meta:[
     ['航班','DY360（Norwegian）'],
     ['起飞','9.26 08:55 奥斯陆OSL T1'],
-    ['抵达','9.26 10:35 Evenes EVE 航站楼（奥斯陆时间）']]},
+    ['抵达','9.26 10:35 Evenes EVE 航站楼（奥斯陆时间）']],
+    bag:'待确认（按 Norwegian 票规）',chk:'申根内短途，建议提前 2h 到机场',note:''},
   {tt:'巴士 · Evenes机场→Svolvær市中心',meta:[
     ['运营','NOR-WAY Bussekspress'],
     ['发车','9.26 11:00 Evenes机场'],
     ['到达','9.26 13:58 Svolvær Sentrum（奥斯陆时间）'],
-    ['备注','成人×2，凭邮件电子票/二维码']]},
+    ['备注','成人×2，凭邮件电子票/二维码']],
+    bag:'行李随车',chk:'凭电子票/二维码上车',note:''},
   {tt:'Hurtigruten 海岸邮轮 · Svolvær→Tromsø',meta:[
     ['船名','MS Nordnorge（甲板票 Deck，无舱房，船上过夜）'],
     ['登船','9.28 22:15 Svolvær 港'],
-    ['抵达','9.29 14:15 Tromsø 港（奥斯陆时间）']]},
+    ['抵达','9.29 14:15 Tromsø 港（奥斯陆时间）']],
+    bag:'甲板票，行李随身/船上存放',chk:'登船前带好护照；建议 21:30 前到港',note:''},
   {tt:'北欧中转 · 特罗姆瑟→奥斯陆→哥本哈根→雷克雅未克',meta:[
     ['航段','SK4411 特罗姆瑟→OSL / SK1477 OSL→哥本哈根CPH / SK2595 哥本哈根→KEF'],
     ['起飞','10.2 10:50 特罗姆瑟（SK4411）'],
     ['中转','OSL 停留约 6.5 小时'],
     ['续飞','10.2 19:20 OSL→CPH；10.3 06:25 CPH→KEF'],
-    ['抵达','10.3 07:45 雷克雅未克KEF（冰岛时间）']]},
+    ['抵达','10.3 07:45 雷克雅未克KEF（冰岛时间）']],
+    bag:'待确认（SAS 跨洲，托运额度见票规）',
+    chk:'CPH→KEF 为申根→非申根，预留值机；10.3 06:25 极早班，建议 04:30 前到 CPH',
+    note:'10.3 凌晨公共交通稀疏，多人优先出租车'},
   {tt:'返程 · 雷克雅未克→华沙→曼谷',meta:[
     ['航段','LO500 KEF→华沙WAW / LO065 华沙→曼谷BKK'],
     ['起飞','10.7 00:45 雷克雅未克KEF（冰岛时间）'],
-    ['中转','华沙 WAW'],
-    ['抵达','10.8 07:05 曼谷BKK（曼谷时间）']]},
+    ['中转','华沙 WAW（07:30–13:30 长转机，机场内休息）'],
+    ['抵达','10.8 07:05 曼谷BKK（曼谷时间）']],
+    bag:'待确认（LOT 跨洲）',chk:'10.7 00:45 夜飞；华沙中转约 6h，机场内休息',note:''},
   {tt:'回国 · 曼谷→成都',meta:[
     ['航班','3U3936（Sichuan Airlines）'],
     ['起飞','10.8 18:05 曼谷BKK（曼谷时间）'],
-    ['抵达','10.8 22:10 成都天府TFU T1（成都时间）']]}
+    ['抵达','10.8 22:10 成都天府TFU T1（成都时间）']],
+    bag:'待确认（四川航空）',chk:'国际航班，建议提前 3h 到 BKK；可提前在线值机',note:''}
 ];
+const BK={}; HOTELS.forEach((h,i)=>BK['H'+i]=h); CARS.forEach((c,i)=>BK['C'+i]=c); FLIGHTS.forEach((f,i)=>BK['F'+i]=f);
 
 // 逐日行程（Day1 = 9.25）
 const DAYS=[
- {y:2026,mo:9,d:25,color:0,stay:'Clarion Oslo Airport（奥斯陆机场旁）',sum:'长途飞行落地，倒时差。',
-  map:[{n:'奥斯陆 OSL',lat:60.1976,lng:11.1002},{n:'Clarion 机场酒店',lat:60.1976,lng:11.1002}],
+ {y:2026,mo:9,d:25,dr:'9.24–9.25',color:0,stay:'Clarion Oslo Airport（奥斯陆机场旁）',sum:'长途飞行日：成都→曼谷→伊斯坦布尔→奥斯陆。',
+  map:[{n:'成都 TFU',lat:30.3130,lng:104.4420},{n:'曼谷 BKK',lat:13.6900,lng:100.7500},{n:'伊斯坦布尔 IST',lat:41.2750,lng:28.7519},{n:'奥斯陆 OSL',lat:60.1976,lng:11.1002},{n:'Clarion 机场酒店',lat:60.1976,lng:11.1002}],
   items:[
-   {t:'17:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达奥斯陆机场 OSL',nav:C.osloA,de:'出关后前往 Clarion Hotel Oslo Airport（步行/短驳，酒店就在机场旁）。'},
-   {t:'傍晚',tz:'',ti:'入住 + 休整',nav:C.osloA,de:'早点休息，调整时差。次日清晨航班，酒店即机场，省去奔波。'}
+   {t:'19:00',tz:'成都',tzn:'Asia/Shanghai',ti:'从成都市区出发 → 天府机场 T1',nav:C.tfu,de:'建议提前 3 小时到达；SL933 22:15 起飞。'},
+   {t:'22:15',tz:'成都',tzn:'Asia/Shanghai',ti:'SL933 天府 TFU → 曼谷 DMK',nav:C.bkk,de:'固定航班（泰国时间）。',bk:'F0'},
+   {t:'00:15+1',tz:'曼谷',tzn:'Asia/Bangkok',ti:'抵达 DMK，转场前往 BKK',nav:C.bkk,de:'入境取行李后转场 BKK（跨机场）；走高速约 47km，Grab 约 400–600 泰铢+高速费 70–100 泰铢，非高峰 40–50min / 高峰 60–120min；跨机场预留 3.5–4h，别坐门口拉客出租；联程持 BKK 登机牌可坐 AOT 免费穿梭巴士（50–90min）。'},
+   {t:'06:40',tz:'曼谷',tzn:'Asia/Bangkok',ti:'TK059 曼谷 BKK → 伊斯坦布尔 IST',nav:C.ist,de:'固定航班。'},
+   {t:'12:40',tz:'伊斯坦布尔',tzn:'Europe/Istanbul',ti:'抵达 IST，机场内转机',nav:C.ist,de:'建议不出机场。'},
+   {t:'15:00',tz:'伊斯坦布尔',tzn:'Europe/Istanbul',ti:'TK1753 伊斯坦布尔 IST → 奥斯陆 OSL',nav:C.osloA,de:'固定航班。'},
+   {t:'17:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 OSL，入住机场酒店',nav:C.osloA,de:'前往 Clarion Hotel Oslo Airport（步行/短驳）；当天不安排进城。',bk:'H0'}
   ]},
- {y:2026,mo:9,d:26,color:1,stay:'Quality Hotel Richard With（Stokmarknes）',sum:'飞行+巴士+取车，当日入住韦斯特龙。',
-  map:[{n:'OSL',lat:60.1976,lng:11.1002},{n:'Evenes',lat:68.4916,lng:16.6758},{n:'Svolvær',lat:68.2330,lng:14.5650},{n:'Stokmarknes',lat:68.5689,lng:15.0167}],
+ {y:2026,mo:9,d:26,color:1,stay:'Quality Hotel Richard With（Stokmarknes）',sum:'飞行+巴士+取车，轮渡跨海入住韦斯特龙。',
+  map:[{n:'OSL',lat:60.1976,lng:11.1002},{n:'Evenes',lat:68.4916,lng:16.6758},{n:'Svolvær',lat:68.2330,lng:14.5650},{n:'Fiskebøl',lat:68.2300,lng:13.8500},{n:'Melbu',lat:68.5100,lng:14.8300},{n:'Stokmarknes',lat:68.5689,lng:15.0167}],
   items:[
-   {t:'08:55',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'航班 DY360 → Evenes',nav:C.eve,de:'奥斯陆OSL T1 起飞，10:35 到 Evenes EVE。建议 06:30 前到机场（酒店即机场）。'},
-   {t:'11:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'巴士 NOR-WAY → Svolvær',nav:C.svol,de:'Evenes 机场发车，13:58 到 Svolvær 市中心。'},
-   {t:'14:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'取车 Avis（Svolvær）',nav:C.svol,de:'Vorsetøyveien 1，大众 ID.3 纯电。门店 15:00 关，务必准时；出发前规划充电。'},
-   {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'驱车前往 Stokmarknes（约 2 小时）',nav:C.stok,de:'入住 Quality Hotel Richard With（Havnegata 2）。注意：酒店在韦斯特龙 Vesterålen，不在罗弗敦主岛。'},
-   {t:'傍晚',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Hurtigruten 博物馆 + 晚餐',nav:C.stokMus,de:'Stokmarknes 港边的 Hurtigruten 博物馆（M/S Finnmarken），步行可达，了解海岸邮轮历史。'}
+   {t:'05:45',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'退房 Clarion，前往奥斯陆机场',nav:C.osloA,de:'酒店即机场，短驳；DY360 08:55 起飞。'},
+   {t:'08:55',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'DY360 奥斯陆 OSL → Evenes EVE',nav:C.eve,de:'OSL T1 起飞，10:35 到 Evenes EVE。建议 06:30 前到机场。',bk:'F1'},
+   {t:'11:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'NOR-WAY 巴士 → Svolvær',nav:C.svol,de:'Evenes 机场发车，13:58 到 Svolvær 市中心。',bk:'F2'},
+   {t:'14:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'取车 Avis（Svolvær）',nav:C.svol,de:'Vorsetøyveien 1，大众 ID.3 纯电。门店 15:00 关，务必准时；出发前规划充电。',bk:'C0'},
+   {t:'15:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Svolvær 港口漫步 + 超市采购',nav:C.svol,de:'为自驾补给食材。'},
+   {t:'16:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'离开 Svolvær，前往 Fiskebøl 码头',nav:C.svol,de:'Svolvær→Fiskebøl 约 25 分钟；采购/逛街未完要更早离开。'},
+   {t:'17:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'轮渡 Fiskebøl → Melbu（25 分钟）',nav:C.melbu,web:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-26&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073',webLabel:'班次查询',de:'16:45 到码头排队（预留 10–15min）；⚠️ 别卡 17:00 才走，错过 17:30 这班下班会 19:30、到店 20 点后。总约 1h40m（含轮渡+开车+排队）。'},
+   {t:'18:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 Stokmarknes 酒店办理入住',nav:C.stok,de:'Quality Hotel Richard With（Havnegata 2），韦斯特龙 Vesterålen，非罗弗敦主岛。',bk:'H1'},
+   {t:'傍晚',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Hurtigruten 博物馆 + 晚餐',nav:C.stokMus,de:'Stokmarknes 港边 M/S Finnmarken，步行可达，了解海岸邮轮历史。'}
   ]},
- {y:2026,mo:9,d:27,color:2,stay:'Quality Hotel Richard With（Stokmarknes）',sum:'Vesterålen 近处玩法（已据 Stokmarknes 基地重排，不再硬塞罗弗敦南线）。',
-  map:[{n:'Stokmarknes',lat:68.5689,lng:15.0167},{n:'Nyksund',lat:68.9300,lng:15.0800},{n:'Sortland',lat:68.6960,lng:15.4110},{n:'Andenes',lat:69.3150,lng:16.1200}],
+ {y:2026,mo:9,d:27,color:2,stay:'Quality Hotel Richard With（Stokmarknes）',sum:'罗弗敦南线一日（基础 B 版，不去 Å 村；天气极好才临时冲 Å）。',
+  map:[{n:'Stokmarknes',lat:68.5689,lng:15.0167},{n:'Melbu',lat:68.5100,lng:14.8300},{n:'Fiskebøl',lat:68.2300,lng:13.8500},{n:'Leknes',lat:68.1500,lng:13.6100},{n:'Ramberg',lat:67.9050,lng:13.0800},{n:'Hamnøy',lat:67.8930,lng:13.0800},{n:'Sakrisøy',lat:67.8830,lng:13.0750},{n:'Reine',lat:67.9330,lng:13.0900},{n:'Fredvang',lat:68.0800,lng:13.2100}],
   items:[
-   {t:'上午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'方案A：Nyksund 老渔村（约 1h 车程）',nav:C.nyks,de:'走风景公路 Nyksundveien，废弃渔村、海岸步道，人少景野。'},
-   {t:'上午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'方案B：Andenes 观鲸（约 1.5–2h 车程）',nav:C.ande,de:'Andøya 岛，9月底仍有抹香鲸。',book:true,bookTxt:'观鲸团建议提前官网预订'},
-   {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'经 Sortland 返回',nav:C.sort,de:'“蓝色小镇”Sortland、跨海大桥与海岸风光，顺路补货/加油（充电）。'},
-   {t:'傍晚',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'回 Stokmarknes',nav:C.stok,de:'晚餐，留意极光（韦斯特龙秋夜光害低）。'}
+   {t:'06:55',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'离开 Stokmarknes 酒店',nav:C.stok,de:'出发前加满油箱；不绕道 Henningsvær。'},
+   {t:'07:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'轮渡 Melbu → Fiskebøl（25 分钟）',nav:C.fiskebol,web:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-27&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073',webLabel:'班次查询',de:'07:10 到 Melbu 码头等候。'},
+   {t:'09:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Leknes 加油 + 超市采购',nav:C.leknes,de:'停留约 20 分钟。'},
+   {t:'10:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Ramberg Beach 沙滩',nav:C.ramberg,de:'拍照、海边休憩，约 40 分钟。'},
+   {t:'10:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Hamnøy 红渔屋',nav:C.hamnoy,de:'重点打卡，约 50 分钟。'},
+   {t:'11:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Sakrisøy 小渔村',nav:C.sakrisoy,de:'闲逛拍照，约 25 分钟。'},
+   {t:'12:05',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Reine 小镇 平地观景',nav:C.reine,de:'不爬山，可坐下来休息，约 85 分钟。'},
+   {t:'12:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'【临时备选】天气极好冲 Å 村',nav:C.aVillage,de:'非硬性打卡；仅天气极好、体力充沛时临时决定南下。'},
+   {t:'13:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'返程向北，Fredvang 大桥拍照',nav:C.fredvang,de:'约 16:00 到 Fiskebøl 码头。'},
+   {t:'17:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'轮渡 Fiskebøl → Melbu（25 分钟）',nav:C.melbu,web:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-27&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073',webLabel:'班次查询',de:'返程。'},
+   {t:'18:10',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'回到 Stokmarknes 酒店',nav:C.stok,de:''},
+   {t:'晚上',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'小镇散步 + 视天气追极光',nav:C.stok,de:''}
   ]},
- {y:2026,mo:9,d:28,color:3,stay:'Hurtigruten 邮轮（Svolvær→Tromsø）',sum:'上午还车，傍晚登船，船上过夜。',
-  map:[{n:'Stokmarknes',lat:68.5689,lng:15.0167},{n:'Svolvær',lat:68.2330,lng:14.5650},{n:'Tromsø(次日)',lat:69.6492,lng:18.9553}],
+ {y:2026,mo:9,d:28,color:3,stay:'Hurtigruten 邮轮（Svolvær→Tromsø）',sum:'轮渡过海 + E10 北上，下午还车，夜登邮轮。',
+  map:[{n:'Stokmarknes',lat:68.5689,lng:15.0167},{n:'Melbu',lat:68.5100,lng:14.8300},{n:'Fiskebøl',lat:68.2300,lng:13.8500},{n:'Austnesfjorden',lat:68.2700,lng:13.9500},{n:'Kabelvåg',lat:68.2100,lng:14.4800},{n:'Svolvær',lat:68.2330,lng:14.5650}],
   items:[
-   {t:'上午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'退房，驱车回 Svolvær（约 2h）',nav:C.svol,de:'途中可在 Svolvær 周边停留：Svolværgeita 山尖观景、Magic Ice 冰雪酒吧。'},
-   {t:'14:30前',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'还车 Avis（Svolvær）',nav:C.svol,de:'Vorsetøyveien 1，锁车投钥匙箱。务必在 14:30 前完成。'},
-   {t:'傍晚',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'登船 Hurtigruten MS Nordnorge',nav:C.svol,de:'22:15 Svolvær 港登船；甲板票（Deck），无舱房，船上过夜。带好保暖衣物。'},
-   {t:'夜间',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'航行中',nav:null,de:'邮轮经罗弗敦海峡北行，甲板赏景/极光。'}
+   {t:'09:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'离开 Stokmarknes 酒店',nav:C.stok,de:'退房 Quality Hotel Richard With（9.26–28 入住）。'},
+   {t:'09:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'轮渡 Melbu → Fiskebøl（25 分钟）',nav:C.fiskebol,web:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-28&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073',webLabel:'班次查询',de:'只走 E10，不去 Henningsvær。'},
+   {t:'10:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Austnesfjorden Viewpoint',nav:C.austnes,de:'替换原 Raftsundet 观景台，峡湾拍照约 15 分钟。'},
+   {t:'11:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Kabelvåg 古老渔村',nav:C.kabelvag,de:'渔港、鳕鱼晾晒架，约 30 分钟。'},
+   {t:'12:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 Svolvær 市区，自由午餐/逛街',nav:C.svol,de:''},
+   {t:'13:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'到达 Avis 门店',nav:C.svol,de:''},
+   {t:'14:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'完成还车 Avis',nav:C.svol,de:'锁车投钥匙箱。务必 14:30 前完成。',bk:'C0'},
+   {t:'14:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Svolvær 酒店(Thon/Scandic)寄存行李',nav:C.svol,de:'仅白天寄存、非过夜；带小包随身。'},
+   {t:'14:40–21:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'下午/傍晚自由活动',nav:C.svol,de:'海港散步、超市采购船上物资、晚餐。'},
+   {t:'21:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达轮渡码头登船（带护照）',nav:C.svol,de:'邮轮 22:15 启航，建议提前 15 分钟完成登船。'},
+   {t:'22:15',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'邮轮启航 Svolvær → Tromsø',nav:C.svol,de:'MS Nordnorge（甲板票，无舱房，船上过夜）。带好保暖衣物。',bk:'F3'}
   ]},
  {y:2026,mo:9,d:29,color:4,stay:'The Dock 69°39 by Scandic（Tromsø）',sum:'抵达北极圈名城特罗姆瑟。',
   map:[{n:'Tromsø 港',lat:69.6492,lng:18.9553},{n:'The Dock',lat:69.6470,lng:18.9550},{n:'Polaria',lat:69.6460,lng:18.9520},{n:'Polarmuseet',lat:69.6480,lng:18.9640}],
@@ -393,7 +444,7 @@ const DAYS=[
  {y:2026,mo:9,d:30,color:5,stay:'The Dock 69°39 by Scandic（Tromsø）',sum:'缆车夜景 + 极光。',
   map:[{n:'Fjellheisen',lat:69.6270,lng:18.9620},{n:'Polaria',lat:69.6460,lng:18.9520},{n:'Polarmuseet',lat:69.6480,lng:18.9640}],
   items:[
-   {t:'白天',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Fjellheisen 缆车',nav:C.fjell,de:'上山俯瞰特罗姆瑟与峡湾，夜间是极光观景点。',book:true,bookTxt:'建议提前购票免排队'},
+   {t:'白天',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Fjellheisen 缆车',nav:C.fjell,web:'https://www.fjellheisen.no/engelsk/fjellheisen-home',webLabel:'官网预订',book:true,bookTxt:'提前一天购票',info:'<b>缆车：</b>Fjellheisen（特罗姆瑟观景缆车）；每整点/半点一班（00/30 分），车程 5 分钟，山顶可停留到闭园。<br><br><b>购票方式（优先顺序）：</b><br>① <b>官网首选</b>（点上方「官网预订」）：All Cable Car Tickets → 选往返 Round-trip（推荐）/单程；选日期+时段（上午/下午/傍晚极光场）；Visa/Master 付款（不支持 Amex）。电子票存手机扫码，票有效期 7 天，天气停运可免费改期，傍晚场免排队。<br>② <b>国内 OTA</b>（去哪儿/Trip.com/携程搜「特罗姆瑟 Fjellheisen 缆车往返票」）：¥210–240/人，电子码检票，多不可退改；⚠️ 选 <b>17:00 后傍晚场</b>看夜景+极光。',de:'每整点/半点一班（00/30 分），车程 5 分钟，山顶可停留到闭园。⚠️ 已提前一日购票（官网/OTA，选 17:00 后傍晚场看极光）；点上方「📋 提前一天购票」看详细步骤。'},
    {t:'白天',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'补漏：Polaria / Polarmuseet',nav:C.polaria,de:'前一天没去完的可补。'},
    {t:'夜间',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'极光 hunt',nav:C.fjell,de:'远离城市光害，关注 KP 指数与极光预报。'}
   ]},
@@ -408,17 +459,19 @@ const DAYS=[
  {y:2026,mo:10,d:2,color:7,stay:'Cabinn City（哥本哈根）',sum:'飞往哥本哈根中转。',
   map:[{n:'Tromsø',lat:69.6492,lng:18.9553},{n:'OSL',lat:60.1976,lng:11.1002},{n:'CPH',lat:55.6761,lng:12.5640}],
   items:[
-   {t:'10:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'航班 SK4411 → OSL',nav:C.trom,de:'特罗姆瑟起飞，12:45 到奥斯陆。'},
+   {t:'10:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'SK4411 特罗姆瑟 → OSL',nav:C.trom,de:'特罗姆瑟起飞，12:45 到奥斯陆。',bk:'F4'},
    {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'OSL 中转（约 6.5h）',nav:C.osloA,de:'机场内用餐、休整。'},
-   {t:'19:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'航班 SK1477 → 哥本哈根',nav:C.cph,de:'20:30 到 CPH。'},
-   {t:'夜晚',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'入住 + 新港夜游',nav:C.nyhavn,de:'Cabinn City（Mitchellsgade 14）；Nyhavn 新港彩房运河散步。'}
+   {t:'19:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'SK1477 OSL → 哥本哈根 CPH',nav:C.cph,de:'20:30 到 CPH。',bk:'F4'},
+   {t:'20:30',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'抵达 CPH → Cabinn City',nav:C.cph,de:'区域火车 T3→København H ~15min + 步行 500m/7–10min；或出租车 250–320 DKK ~20min。车票机器仅 Visa/Master、不收现金（亦可 DOT‑Tickets APP）；酒店 24h 前台、入住截至 23:30；不含早。',bk:'H4'},
+   {t:'夜晚',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'城市轻夜景打卡',nav:C.tivoli,de:'市政厅广场+安徒生雕像（步行5–8min）→ Strøget 步行街晚餐（smørrebrød）→ Tivoli 大门外拍照（园内10月夜间大概率关、不进园）。❌ 不跑 Nyhavn 新港/小美人鱼（远、天黑、次日极早起）。'}
   ]},
  {y:2026,mo:10,d:3,color:8,stay:'Reykjavik Lights（雷克雅未克）',sum:'飞抵冰岛，取车，雷克雅未克市区。',
   map:[{n:'CPH',lat:55.6761,lng:12.5640},{n:'KEF',lat:63.9850,lng:-22.6050},{n:'Reykjavík',lat:64.1180,lng:-21.8500},{n:'Hallgrímskirkja',lat:64.1420,lng:-21.9267}],
   items:[
-   {t:'06:25',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'航班 SK2595 → KEF',nav:C.cph,de:'清晨起飞，07:45 到雷克雅未克 KEF。'},
-   {t:'09:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'取车 Europcar（KEF）',nav:C.kef,de:'到达大厅步行可达，Dacia Duster 燃油。可晚取。'},
-   {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'驱车入城，入住 Reykjavik Lights',nav:C.rvk,de:'Suðurlandsbraut 12。'},
+   {t:'03:50',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'离开 Cabinn City 前往 CPH 机场',nav:C.cph,de:'区域火车 København H→CPH T3 ~15min，或出租车 04:00 出发 ~300–350 DKK 最稳。⚠️ SAS 国际航班 06:25 起飞，建议 04:30 前到机场；凌晨公共交通班次疏（15–20min/班），多人优先出租车。酒店 24h 前台、不含早，路上干粮自备。'},
+   {t:'06:25',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'SK2595 哥本哈根 → 雷克雅未克 KEF',nav:C.cph,de:'清晨起飞，07:45 到雷克雅未克 KEF。',bk:'F4'},
+   {t:'09:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'取车 Europcar（KEF）',nav:C.kef,de:'到达大厅步行可达，Dacia Duster 燃油。可晚取。',bk:'C1'},
+   {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'驱车入城，入住 Reykjavik Lights',nav:C.rvk,de:'Suðurlandsbraut 12。',bk:'H5'},
    {t:'下午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'市区：Hallgrímskirkja / Harpa / 市政厅',nav:C.hall,de:'教堂登顶约 1000 ISK；Harpa 音乐厅免费进；市政厅免费 3D 沙盘。'},
    {t:'夜间',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'极光（若晴）',nav:C.rvk,de:'近郊光害更低。'}
   ]},
@@ -451,8 +504,9 @@ const DAYS=[
  {y:2026,mo:10,d:7,color:12,stay:'飞机上（转机）',sum:'转机日：雷克雅未克→华沙→曼谷。',
   map:[{n:'KEF',lat:63.9850,lng:-22.6050},{n:'WAW',lat:52.2290,lng:21.0110},{n:'BKK',lat:13.6900,lng:100.7500}],
   items:[
-   {t:'00:45',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'航班 LO500 → 华沙',nav:C.kef,de:'起飞；06:45 到 WAW。'},
-   {t:'15:45',tz:'曼谷',tzn:'Asia/Bangkok',ti:'航班 LO065 → 曼谷',nav:C.waw,de:'华沙起飞；10.8 07:05 到 BKK（曼谷时间）。'}
+   {t:'00:45',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'航班 LO500 → 华沙',nav:C.kef,de:'起飞；06:45 到 WAW。',bk:'F5'},
+   {t:'07:30–13:30',tz:'华沙',tzn:'Europe/Warsaw',ti:'华沙 WAW 长转机，机场内休息调整',nav:C.waw,de:'也可视情况轻量活动；以休息、保持体力为最优先。'},
+   {t:'15:45',tz:'曼谷',tzn:'Asia/Bangkok',ti:'航班 LO065 → 曼谷',nav:C.waw,de:'华沙起飞；10.8 07:05 到 BKK（曼谷时间）。',bk:'F5'}
   ]},
  {y:2026,mo:10,d:8,color:13,stay:'回家 🏠',sum:'曼谷→成都，旅程结束。',
   map:[{n:'BKK',lat:13.6900,lng:100.7500},{n:'TFU',lat:30.3130,lng:104.4420}],
@@ -465,62 +519,75 @@ const DAYS=[
 
 /* 景点增强：图片(Wikipedia 条目) + 简介，键为 "天号:item序号" */
 const SPOTS={
-  '1:0':{wiki:'Oslo Airport, Gardermoen',intro:'挪威最大机场，位于奥斯陆东北约 50 公里，连通欧洲多城。'},
-  '1:1':{intro:'酒店就在机场旁，步行/短驳可达，省去进城奔波。'},
-  '2:0':{wiki:'Harstad/Narvik Airport, Evenes',intro:'北极圈内的 Evenes 机场，去罗弗敦/韦斯特龙的空中门户。'},
-  '2:1':{wiki:'Svolvær',intro:'罗弗敦的“首府”，彩色渔屋与陡峭山峰相映。'},
-  '2:2':{intro:'Avis 取车点，大众 ID.3 纯电，门店 15:00 关。'},
-  '2:3':{wiki:'Stokmarknes',intro:'韦斯特龙的港口小镇，也是 Hurtigruten 邮轮的发源地。'},
-  '2:4':{wiki:'Hurtigruten Museum',intro:'停泊的 M/S Finnmarken 老邮轮，讲述海岸航线百年史。'},
-  '3:0':{wiki:'Nyksund',intro:'废弃渔村，风景公路尽头的海岸秘境，人少景野。'},
-  '3:1':{wiki:'Andenes',intro:'Andøya 岛北端，欧洲最佳观鲸点之一（9 月底仍有抹香鲸）。'},
-  '3:2':{wiki:'Sortland',intro:'“蓝色小镇”，跨海大桥与海岸风光，顺路补货充电。'},
-  '3:3':{wiki:'Stokmarknes',intro:'韦斯特龙秋夜光害低，留意极光。'},
-  '4:0':{wiki:'Svolvær',intro:'途经 Svolværgeita 山尖、Magic Ice 冰雪酒吧。'},
-  '4:1':{intro:'锁车投钥匙箱，务必 14:30 前完成。'},
-  '4:2':{wiki:'Hurtigruten',intro:'沿挪威海岸航行的经典邮轮，一晚抵达特罗姆瑟。'},
-  '4:3':{wiki:'Lofoten',intro:'邮轮经罗弗敦海峡北行，甲板可赏景/极光。'},
+  /* Day1（9.24–9.25）全程飞行/中转，无景点图 */
+  /* Day2（9.26） */
+  '2:4':{wiki:'Svolvær',intro:'罗弗敦的“首府”，彩色渔屋与陡峭山峰相映。'},
+  '2:7':{wiki:'Stokmarknes',intro:'韦斯特龙的港口小镇，Hurtigruten 邮轮发源地。'},
+  '2:8':{wiki:'Hurtigruten Museum',intro:'停泊的 M/S Finnmarken 老邮轮，讲述海岸航线百年史。'},
+  /* Day3（9.27 罗弗敦南线） */
+  '3:2':{wiki:'Leknes',intro:'罗弗敦补给重镇，超市与加油站。'},
+  '3:3':{wiki:'Ramberg Beach',intro:'罗弗敦南线白沙滩，背靠群山。'},
+  '3:4':{wiki:'Hamnøy',intro:'红渔屋与峡湾同框的经典机位。'},
+  '3:5':{wiki:'Sakrisøy',intro:'明黄色渔屋小村，风景明信片。'},
+  '3:6':{wiki:'Reine',intro:'罗弗敦地标渔村，平地即可观景（不爬山）。'},
+  '3:7':{wiki:'Å',intro:'罗弗敦最南端渔村，路程尽头（临时备选）。'},
+  /* Day4（9.28） */
+  '4:2':{wiki:'Austnesfjorden Viewpoint',intro:'替换原 Raftsundet 的峡湾观景台。'},
+  '4:3':{wiki:'Kabelvåg',intro:'罗弗敦古老渔村，鳕鱼晾晒架。'},
+  '4:10':{wiki:'Hurtigruten',intro:'沿挪威海岸航行的经典邮轮，一晚抵特罗姆瑟。'},
+  /* Day5（9.29） */
   '5:0':{wiki:'Tromsø',intro:'北极圈内名城，号称“北极首都”。'},
   '5:1':{wiki:'Polaria',intro:'北极水族馆，海豹与北极生态展示。'},
   '5:2':{wiki:'Polar Museum (Tromsø)',intro:'极地探险与狩猎历史博物馆。'},
+  /* Day6（9.30） */
   '6:0':{wiki:'Fjellheisen',intro:'城市缆车，登顶俯瞰峡湾，夜间是极光观测点。'},
   '6:1':{wiki:'Tromsø',intro:'补漏 Polaria / Polarmuseet 等。'},
   '6:2':{wiki:'Aurora',intro:'极光（Aurora），秋夜晴朗时可见于北极圈。'},
+  /* Day7（10.2） */
   '7:0':{wiki:'Arctic Cathedral',intro:'特罗姆瑟地标，三角冰山造型。'},
-  '7:3':{wiki:'Aurora',intro:'极光（Aurora），最后一夜留意。'},
-  '8:0':{wiki:'Oslo Airport, Gardermoen',intro:'奥斯陆枢纽机场，中转地。'},
-  '8:1':{wiki:'Oslo Airport, Gardermoen',intro:'机场内用餐、休整，约 6.5 小时中转。'},
-  '8:2':{wiki:'Copenhagen Airport',intro:'哥本哈根门户机场。'},
-  '8:3':{wiki:'Nyhavn',intro:'新港运河畔的彩房老码头，散步绝佳。'},
+  '7:4':{wiki:'Tivoli Gardens',intro:'哥本哈根游乐园，10 月夜间园外灯光好看（园内大概率关）。'},
+  /* Day8（10.3） */
+  '8:1':{wiki:'Keflavík International Airport',intro:'雷克雅未克出发/抵达，跨洲中转。'},
+  '8:2':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
+  '8:3':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
+  '8:4':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
+  /* Day9（10.4） */
   '9:0':{wiki:'Keflavík International Airport',intro:'冰岛主机场，租车与离港都在这里。'},
   '9:1':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
   '9:2':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
   '9:3':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
   '9:4':{wiki:'Aurora',intro:'极光（Aurora），近郊光害更低。'},
+  /* Day10（10.5） */
   '10:0':{wiki:'Ring Road (Iceland)',intro:'冰岛 1 号环岛公路，南岸风光主线。'},
   '10:1':{wiki:'Seljalandsfoss',intro:'可从水帘后方穿行的瀑布。'},
   '10:2':{wiki:'Skógafoss',intro:'宽瀑，登阶上顶俯瞰。'},
   '10:3':{wiki:'Reynisfjara',intro:'黑沙滩与玄武岩柱，海浪凶险，远离浪线。'},
   '10:4':{wiki:'Eyjafjallajökull',intro:'邻近 2010 年喷发致欧洲空运瘫痪的火山。'},
+  /* Day11（10.6） */
   '11:0':{wiki:'Þingvellir',intro:'板块裂谷，联合国教科文世界遗产。'},
   '11:1':{wiki:'Geysir',intro:'Strokkur 间歇泉，每隔几分钟喷发一次。'},
   '11:2':{wiki:'Gullfoss',intro:'双层黄金瀑布，水雾弥漫。'},
   '11:3':{wiki:'Golden Circle (Iceland)',intro:'黄金圈，冰岛最经典一日游线路。'},
   '11:4':{wiki:'Silfra',intro:'板块大裂缝浮潜，水质极清，需提前预约。'},
+  /* Day12（10.7） */
   '12:0':{wiki:'Golden Circle (Iceland)',intro:'黄金圈乡村，退房南行。'},
   '12:1':{wiki:'Kerið',intro:'火山口湖，红岩碧水。'},
   '12:2':{wiki:'Keflavík International Airport',intro:'Europcar 还车点，可早还。'},
   '12:3':{wiki:'Keflavík International Airport',intro:'LO500 00:45 起飞，当晚在 KEF/飞机上过夜。'},
+  /* Day13（10.8 转机） */
   '13:0':{wiki:'Keflavík International Airport',intro:'雷克雅未克出发，夜飞。'},
-  '13:1':{wiki:'Warsaw Chopin Airport',intro:'华沙中转，续飞曼谷。'},
+  '13:1':{wiki:'Warsaw Chopin Airport',intro:'华沙长转机，机场内休息调整。'},
+  '13:2':{wiki:'Warsaw Chopin Airport',intro:'华沙续飞曼谷。'},
+  /* Day14（10.8） */
   '14:0':{wiki:'Suvarnabhumi Airport',intro:'曼谷素万那普机场，转机休整。'},
   '14:1':{wiki:'Chengdu Tianfu International Airport',intro:'成都天府国际机场 T1。'},
   '14:2':{wiki:'Chengdu Tianfu International Airport',intro:'旅程圆满结束 🎉'}
 };
 /* 每天交通跳转链接（键为天号） */
 const TRANSPORT={
-  2:[{label:'✈ Norwegian (DY360)',url:'https://www.norwegian.com'},{label:'🚌 NOR-WAY 巴士',url:'https://www.nor-way.no'},{label:'🚗 Avis 取车',url:'https://www.avis.com'}],
-  4:[{label:'🚗 Avis 还车',url:'https://www.avis.com'},{label:'🚢 Hurtigruten 邮轮',url:'https://www.hurtigruten.com'}],
+  2:[{label:'✈ Norwegian (DY360)',url:'https://www.norwegian.com'},{label:'🚌 NOR-WAY 巴士',url:'https://www.nor-way.no'},{label:'🚗 Avis 取车',url:'https://www.avis.com'},{label:'⛴ Torghatten 轮渡',url:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-26&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073'}],
+  3:[{label:'⛴ Torghatten 轮渡',url:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-27&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073'}],
+  4:[{label:'🚗 Avis 还车',url:'https://www.avis.com'},{label:'🚢 Hurtigruten 邮轮',url:'https://www.hurtigruten.com'},{label:'⛴ Torghatten 轮渡',url:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-28&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073'}],
   6:[{label:'🚡 Fjellheisen 缆车',url:'https://fjellheisen.no'}],
   7:[{label:'✈ SAS (SK4411/SK1477)',url:'https://www.flysas.com'}],
   8:[{label:'✈ SAS (SK2595)',url:'https://www.flysas.com'},{label:'🚗 Europcar 取车',url:'https://www.europcar.com'}],
@@ -558,6 +625,7 @@ const TODO=[
   '挪威段电动车充电规划（Avis ID.3 纯电，沿途 Fortum/IONITY 等）',
   '可选：提前官网预订 Andenes 观鲸团（9月底仍有抹香鲸）',
   '可选：提前官网预订 Silfra 浮潜（需会游泳/持证）',
+  '🚡 Fjellheisen 缆车提前一天购票（官网/OTA 选 17:00 后傍晚场看夜景+极光；不支持 Amex，票 7 天有效、天气停运可免费改期）',
   '准备三层保暖衣物 + 防风防水外层（10月夜间体感低 3–5℃）',
   '兑换少量 NOK / ISK 现金（备小额，多数可刷卡）',
   '检查护照有效期（>6个月）并备齐签证材料（在职/准假证明、银行流水等）',
@@ -695,48 +763,54 @@ function renderOverview(){
   document.getElementById('legend').innerHTML=lg;
 }
 
-// 订单
-function renderBook(){
-  let h='';
-  h+='<div class="grp"><h3>✈️ 机票 / 船票 / 巴士</h3>';
-  for(const f of FLIGHTS){
-    h+='<div class="ticket"><div class="tt"><span>'+f.tt+'</span></div><div class="meta">';
-    for(const m of f.meta) h+='<b>'+m[0]+'</b><span>'+m[1]+'</span>';
-    h+='</div></div>';
-  }
-  h+='</div>';
-  h+='<div class="grp"><h3>🚗 租车</h3>';
-  for(const c of CARS){
-    h+='<div class="ticket"><div class="tt"><span>'+c.co+'</span></div><div class="meta">';
-    h+='<b>车型</b><span>'+c.car+'</span>';
-    h+='<b>取车</b><span>'+c.pick+' · '+c.pickAddr+' · ☎ '+c.pickTel+' '+pinHTML('导航',c.coord)+'</span>';
-    h+='<b>还车</b><span>'+c.ret+' · '+c.retAddr+'</span>';
-    h+='<b>备注</b><span>'+c.note+'</span>';
-    h+='</div></div>';
-  }
-  h+='</div>';
-  h+='<div class="grp"><h3>🏨 酒店（8 晚）</h3>';
-  for(const ho of HOTELS){
-    h+='<div class="ticket"><div class="tt"><span>'+ho.name+'</span></div><div class="meta">';
-    h+='<b>地址</b><span>'+ho.addr+' '+pinHTML('导航',ho.coord)+'</span>';
-    if(ho.tel) h+='<b>电话</b><span>☎ '+ho.tel+'</span>';
-    h+='<b>入住</b><span>'+ho.in+'</span>';
-    h+='<b>退房</b><span>'+ho.out+'</span>';
-    if(ho.flag) h+='<b>注意</b><span style="color:#b5651d">'+ho.flag+'</span>';
-    h+='</div></div>';
-  }
-  h+='</div>';
-  h+='<div class="note">🎫 暂无已购景点门票 / 活动（按你要求按“现场买 / 免费”处理）。可选项目：Andenes 观鲸团、Silfra 浮潜、Fjellheisen 缆车——如需可提前官网预订，页面逐日行程中已标 <span class="badge">需预约</span>。</div>';
-  document.getElementById('book').innerHTML=h;
-}
+// 已确认订单已并入逐日行程（见 bkCard / renderDays 的 bk 字段），不再单独成章。
 
+// 内联预订卡：根据 bk 指向的 HOTELS / CARS / FLIGHTS 渲染可折叠卡片
+function bkCard(obj){
+  if(!obj) return '';
+  let title, rows=[];
+  if(obj.bf!==undefined){               // 酒店
+    title='🏨 '+obj.name;
+    rows.push(['地址',obj.addr]);
+    if(obj.tel) rows.push(['电话','☎ '+obj.tel]);
+    rows.push(['入住',obj.in]);
+    rows.push(['退房',obj.out]);
+    if(obj.bf) rows.push(['早餐',obj.bf]);
+    if(obj.flag) rows.push(['注意',obj.flag]);
+    if(obj.note) rows.push(['备注',obj.note]);
+    if(obj.coord) rows.push(['导航',pinHTML('地图',obj.coord)]);
+  } else if(obj.car!==undefined){        // 租车
+    title='🚗 '+obj.co;
+    rows.push(['车型',obj.car]);
+    rows.push(['取车',obj.pick]);
+    rows.push(['取车点',obj.pickAddr]);
+    if(obj.pickTel) rows.push(['取车电话','☎ '+obj.pickTel]);
+    rows.push(['还车',obj.ret]);
+    rows.push(['还车点',obj.retAddr]);
+    if(obj.note) rows.push(['备注',obj.note]);
+    if(obj.coord) rows.push(['导航',pinHTML('地图',obj.coord)]);
+  } else if(obj.meta!==undefined){      // 机票/船票/巴士
+    title='✈️ '+obj.tt;
+    for(const m of obj.meta) rows.push([m[0],m[1]]);
+    if(obj.bag) rows.push(['行李',obj.bag]);
+    if(obj.chk) rows.push(['值机',obj.chk]);
+    if(obj.note) rows.push(['注意',obj.note]);
+  } else { return ''; }
+  const body=rows.map(r=>'<div class="bkrow"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>').join('');
+  return '<div class="bkinfo collapsed"><div class="bkhead" onclick="this.parentNode.classList.toggle(\'collapsed\')"><span class="chev">▾</span>'+title+'</div><div class="bkbody">'+body+'</div></div>';
+}
+// 折叠详情卡（info 字段，如缆车购票方式）
+function infoCard(html,label){
+  if(!html) return '';
+  return '<div class="bkinfo collapsed"><div class="bkhead" onclick="this.parentNode.classList.toggle(\'collapsed\')"><span class="chev">▾</span>📋 '+(label||'详情')+'</div><div class="bkbody">'+html+'</div></div>';
+}
 // 逐日行程
 function renderDays(){
   let h='';
   DAYS.forEach((day,idx)=>{
     const col=PALETTE[day.color];
     const wd=weekday(day.y,day.mo,day.d);
-    const dateStr=day.y+'.'+day.mo+'.'+day.d;
+    const dateStr=day.dr||(day.y+'.'+day.mo+'.'+day.d);
     const dayNum=idx+1;
     // 天气卡片（先显示预计，加载后替换）
     const w=WEATHER[dayNum];
@@ -750,14 +824,18 @@ function renderDays(){
       const sp=SPOTS[dayNum+':'+i]||{};
       const tm=it.t;
       const tzSpan=it.tz?'<span class="tz">'+it.tz+'</span>':'';
-      const badge=it.book?'<span class="badge">需预约</span>':'';
+      const badge=it.book?'<span class="badge">'+(it.bookTxt?it.bookTxt:'需预约')+'</span>':'';
       let spot='';
       if(sp.wiki){ spot='<div class="spot"><img id="sp'+idx+'_'+i+'" alt="'+it.ti+'" loading="lazy" onerror="this.style.display=\'none\'"><div class="si">'+(sp.intro||'')+'</div></div>'; }
       else if(sp.intro){ spot='<div class="spot"><div class="si">'+sp.intro+'</div></div>'; }
       let de='<div class="de">'+it.de;
       if(it.nav) de+=' '+pinHTML('导航',it.nav);
+      if(it.web) de+=' <a class="web" href="'+it.web+'" target="_blank" rel="noopener">'+(it.webLabel||'链接')+'</a>';
       de+='</div>';
-      items+='<div class="item"><div class="tm">'+tm+tzSpan+'</div><div class="ct"><div class="ti">'+placeLink(it.ti,it.nav)+badge+'</div>'+spot+de+'</div></div>';
+      let extra='';
+      if(it.bk) extra+=bkCard(BK[it.bk]);
+      if(it.info) extra+=infoCard(it.info, it.bookTxt);
+      items+='<div class="item"><div class="tm">'+tm+tzSpan+'</div><div class="ct"><div class="ti">'+placeLink(it.ti,it.nav)+badge+'</div>'+spot+de+extra+'</div></div>';
     });
     const dm=buildDayMap(day,col);
     const navU=gDay(day.map);
@@ -868,7 +946,6 @@ setInterval(()=>{ if(!themeOverride) applyTheme(); },60000);
 applyTheme();
 renderFocus();
 renderOverview();
-renderBook();
 renderDays();
 renderTodo();
 renderTips();
