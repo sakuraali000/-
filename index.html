@@ -109,7 +109,23 @@
   .todo li{padding:9px 0;border-bottom:1px dashed var(--line);list-style:none;position:relative;padding-left:26px;font-size:14px}
   .todo li:last-child{border-bottom:none}
   .todo li::before{content:"☐";position:absolute;left:0;top:8px;color:var(--accent);font-size:16px}
+  .todo li.done{color:var(--muted);text-decoration:line-through}
+  .todo li.done::before{content:"✓";color:#2e9e5b}
   .todo ul{margin:0;padding:0}
+  .ledger{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+  .ledstA{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .ledstat{background:var(--soft);border-radius:12px;padding:10px 12px}
+  .ledstat .n{font-size:19px;font-weight:800;color:var(--accent2);font-variant-numeric:tabular-nums}
+  .ledstat .l{font-size:12px;color:var(--muted);margin-top:3px}
+  .ledset{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:9px 12px;margin-bottom:12px;line-height:1.6}
+  .ledset b{color:var(--ink)}
+  .ledtbl{width:100%;border-collapse:collapse;font-size:13px}
+  .ledtbl th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .ledtbl td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .ledtbl td.who{font-weight:700;color:var(--accent)}
+  .ledtbl td.amt{text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ledempty{color:var(--muted);font-size:13px;padding:16px 4px;text-align:center;line-height:1.7}
+  @media(min-width:600px){.ledstA{grid-template-columns:1fr 1fr 1fr 1fr}}
 
   /* 贴士 */
   .tips{display:grid;grid-template-columns:1fr;gap:10px}
@@ -172,6 +188,7 @@
     <a href="#days">逐日行程</a>
     <a href="#todo">待办清单</a>
     <a href="#tips">实用贴士</a>
+    <a href="#ledger">旅行记账</a>
   </div>
 </nav>
 
@@ -214,6 +231,11 @@
   <!-- 6. 实用贴士 -->
   <h2 class="sec"><span class="ic">💡</span>实用贴士</h2>
   <div class="tips" id="tips"></div>
+
+  <!-- 7. 旅行记账 -->
+  <h2 class="sec"><span class="ic">💰</span>旅行记账</h2>
+  <div class="note">两人均<b>刷卡支付</b>。告诉我「日期 / 项目 / 外币金额（或人民币）/ 谁刷的卡」，我帮你记上来；<b>累计支出</b>与<b>累计人均支出</b>自动计算。记录金额为<b>人民币实付</b>（卡片外币经美元实时结算扣账），并在括号里备注对应的<b>外币原价</b>，如 ¥1,280.00（NOK 1,900）。</div>
+  <div class="ledger" id="ledgerBox"></div>
 
   <footer>
     本手册为终稿 · 单文件离线可用 · 时区已校准<br>
@@ -302,7 +324,8 @@ const C={
   ist:[41.2750,28.7519],
   fiskebol:[68.2300,13.8500], melbu:[68.5100,14.8300],
   leknes:[68.1500,13.6100], ramberg:[67.9050,13.0800], hamnoy:[67.8930,13.0800], sakrisoy:[67.8830,13.0750], reine:[67.9330,13.0900], aVillage:[67.8680,12.9800], fredvang:[68.0800,13.2100],
-  austnes:[68.2700,13.9500], kabelvag:[68.2100,14.4800], tivoli:[55.6738,12.5683], cityhall:[55.6756,12.5680]
+  austnes:[68.2700,13.9500], kabelvag:[68.2100,14.4800], tivoli:[55.6738,12.5683], cityhall:[55.6756,12.5680],
+  stodvar:[64.8500,-13.9000], n1heitt:[65.6800,-18.1000]
 };
 
 const HOTELS=[
@@ -426,7 +449,7 @@ const DAYS=[
    {t:'09:50',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'轮渡 Melbu → Fiskebøl（25 分钟）',nav:C.fiskebol,web:'https://www.torghatten.no/en/our-routes/18-732?date=2026-09-28&from=NSR:StopPlace:48078&to=NSR:StopPlace:48073',webLabel:'班次查询',de:'只走 E10，不去 Henningsvær。'},
    {t:'10:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Austnesfjorden Viewpoint',nav:C.austnes,de:'替换原 Raftsundet 观景台，峡湾拍照约 15 分钟。'},
    {t:'11:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Kabelvåg 古老渔村',nav:C.kabelvag,de:'渔港、鳕鱼晾晒架，约 30 分钟。'},
-   {t:'12:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 Svolvær 市区，自由午餐/逛街',nav:C.svol,de:''},
+   {t:'12:00',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 Svolvær 市区，自由午餐/逛街',nav:C.svol,de:'📮 寄明信片：小镇纪念品店/超市卖渔村峡湾卡；到红色 Posten 挪威邮政买国际邮票，优先邮局柜台交寄（渔村人少、邮筒频次低，别投偏僻小邮筒）。'},
    {t:'13:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'到达 Avis 门店',nav:C.svol,de:''},
    {t:'14:30',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'完成还车 Avis',nav:C.svol,de:'锁车投钥匙箱。务必 14:30 前完成。',bk:'C0'},
    {t:'14:40',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Svolvær 酒店(Thon/Scandic)寄存行李',nav:C.svol,de:'仅白天寄存、非过夜；带小包随身。'},
@@ -438,7 +461,7 @@ const DAYS=[
   map:[{n:'Tromsø 港',lat:69.6492,lng:18.9553},{n:'The Dock',lat:69.6470,lng:18.9550},{n:'Polaria',lat:69.6460,lng:18.9520},{n:'Polarmuseet',lat:69.6480,lng:18.9640}],
   items:[
    {t:'14:15',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'抵达 Tromsø 港',nav:C.trom,de:'下船后前往 The Dock 69°39 by Scandic 入住（Skansegata 7）。'},
-   {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Polaria 北极水族馆',nav:C.polaria,de:'海豹、北极生态，每日开放。'},
+   {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Polaria 北极水族馆',nav:C.polaria,de:'海豹、北极生态，每日开放。📮 寄明信片：市中心游客中心/纪念品店超多极光主题卡片，到 Posten 邮局买国际邮票寄中国；冬季邮寄量巨大、耗时久，买 2 张 1 寄 1 藏。'},
    {t:'傍晚',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'Polarmuseet 极地博物馆',nav:C.polarm,de:'探险与极地历史，每日开放。'}
   ]},
  {y:2026,mo:9,d:30,color:5,stay:'The Dock 69°39 by Scandic（Tromsø）',sum:'缆车夜景 + 极光。',
@@ -463,34 +486,35 @@ const DAYS=[
    {t:'下午',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'OSL 中转（约 6.5h）',nav:C.osloA,de:'机场内用餐、休整。'},
    {t:'19:20',tz:'奥斯陆',tzn:'Europe/Oslo',ti:'SK1477 OSL → 哥本哈根 CPH',nav:C.cph,de:'20:30 到 CPH。',bk:'F4'},
    {t:'20:30',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'抵达 CPH → Cabinn City',nav:C.cph,de:'区域火车 T3→København H ~15min + 步行 500m/7–10min；或出租车 250–320 DKK ~20min。车票机器仅 Visa/Master、不收现金（亦可 DOT‑Tickets APP）；酒店 24h 前台、入住截至 23:30；不含早。',bk:'H4'},
-   {t:'夜晚',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'城市轻夜景打卡',nav:C.tivoli,de:'市政厅广场+安徒生雕像（步行5–8min）→ Strøget 步行街晚餐（smørrebrød）→ Tivoli 大门外拍照（园内10月夜间大概率关、不进园）。❌ 不跑 Nyhavn 新港/小美人鱼（远、天黑、次日极早起）。'}
+   {t:'夜晚',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'城市轻夜景打卡',nav:C.tivoli,de:'市政厅广场+安徒生雕像（步行5–8min）→ Strøget 步行街晚餐（smørrebrød）→ Tivoli 大门外拍照（园内10月夜间大概率关、不进园）。❌ 不跑 Nyhavn 新港/小美人鱼（远、天黑、次日极早起）。📮 寄明信片：当晚在 Strøget 步行街/游客商店买童话风卡片（不必特地去新港），丹麦 PostNord 买国际航空邮票；你们在哥本哈根仅过夜中转，建议市中心邮局或 CPH 机场寄出——这是全程邮寄最快一站，担心前面丢件可在此多寄一张。'}
   ]},
  {y:2026,mo:10,d:3,color:8,stay:'Reykjavik Lights（雷克雅未克）',sum:'飞抵冰岛，取车，雷克雅未克市区。',
   map:[{n:'CPH',lat:55.6761,lng:12.5640},{n:'KEF',lat:63.9850,lng:-22.6050},{n:'Reykjavík',lat:64.1180,lng:-21.8500},{n:'Hallgrímskirkja',lat:64.1420,lng:-21.9267}],
   items:[
    {t:'03:50',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'离开 Cabinn City 前往 CPH 机场',nav:C.cph,de:'区域火车 København H→CPH T3 ~15min，或出租车 04:00 出发 ~300–350 DKK 最稳。⚠️ SAS 国际航班 06:25 起飞，建议 04:30 前到机场；凌晨公共交通班次疏（15–20min/班），多人优先出租车。酒店 24h 前台、不含早，路上干粮自备。'},
    {t:'06:25',tz:'哥本哈根',tzn:'Europe/Copenhagen',ti:'SK2595 哥本哈根 → 雷克雅未克 KEF',nav:C.cph,de:'清晨起飞，07:45 到雷克雅未克 KEF。',bk:'F4'},
-   {t:'09:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'取车 Europcar（KEF）',nav:C.kef,de:'到达大厅步行可达，Dacia Duster 燃油。可晚取。',bk:'C1'},
+   {t:'09:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'取车 Europcar（KEF）',nav:C.kef,de:'到达大厅步行可达，Dacia Duster 燃油。可晚取。🚻 <b>冰岛自驾如厕攻略</b>：沿途景区基本都有免费洗手间；无景区路段优先找大型 N1/ÓB 加油站（内设干净厕所）；东部峡湾 Stöðvarfjörður（R4MC+GJW, 755）有大型免费公厕、停车免费；阿克雷里附近 N1 Heitt og grilláð 站也有干净厕所以及教堂可顺访。Google Maps 搜"fuel station"或关注路标 ℹ️ 找厕所。',bk:'C1'},
    {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'驱车入城，入住 Reykjavik Lights',nav:C.rvk,de:'Suðurlandsbraut 12。',bk:'H5'},
-   {t:'下午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'市区：Hallgrímskirkja / Harpa / 市政厅',nav:C.hall,de:'教堂登顶约 1000 ISK；Harpa 音乐厅免费进；市政厅免费 3D 沙盘。'},
+   {t:'下午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'市区：Hallgrímskirkja / Harpa / 市政厅',nav:C.hall,de:'教堂登顶约 1000 ISK；Harpa 音乐厅免费进；市政厅免费 3D 沙盘。📮 寄明信片：市中心 Laugavegur 主街纪念品店/邮局买官方风景卡，投门口红色邮筒或柜台交寄；冰岛寄回国很慢（2–6 月都正常），买 2 张 1 寄 1 自留。'},
    {t:'夜间',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'极光（若晴）',nav:C.rvk,de:'近郊光害更低。'}
   ]},
  {y:2026,mo:10,d:4,color:9,stay:'Hotel Eyjafjallajökull（Hvolsvöllur）',sum:'南岸瀑布与黑沙滩。',
   map:[{n:'Reykjavík',lat:64.1180,lng:-21.8500},{n:'Seljalandsfoss',lat:63.6150,lng:-19.9900},{n:'Skógafoss',lat:63.5320,lng:-19.5110},{n:'Vík',lat:63.4060,lng:-19.0440},{n:'Hvolsvöllur',lat:63.7440,lng:-20.2300}],
   items:[
-   {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'退房，沿 1 号公路南行',nav:C.rvk,de:''},
-   {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Seljalandsfoss 瀑布',nav:C.selj,de:'可绕到水帘后方（注意保暖防水）。'},
-   {t:'中午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Skógafoss 瀑布',nav:C.skog,de:'宽瀑，登阶上顶俯瞰。'},
-   {t:'下午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Reynisfjara 黑沙滩（Vík）',nav:C.vik,de:'玄武岩柱、海浪大，远离浪线！'},
-   {t:'傍晚',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'入住 Hotel Eyjafjallajökull',nav:C.hvol,de:'Hvolsvöllur。'}
+   {t:'08:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'退房 Reykjavik Lights，沿 1 号公路南行',nav:C.rvk,de:'全天自驾约 233 km，各景点停留 1 小时；当晚入住 Hvolsvöllur。出城前可在 N1 / ÓB 自助加油站加油（信用卡即可，冰岛几乎全自助）。🚻 各瀑布入口均有免费洗手间；Vík 小镇有公厕；沿途加油站（N1/ÓB）均可如厕。'},
+   {t:'09:40',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Seljalandsfoss 瀑布',nav:C.selj,de:'自雷克雅未克驾车 127 km / 约 1h40m 抵达；可绕到水帘后方穿行（石径湿滑、注意保暖防水）。入口有 café 与洗手间。停留 1h。'},
+   {t:'11:05',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Skógafoss 瀑布',nav:C.skog,de:'续驾 30 km / 约 25m 抵达；宽瀑，右侧 370 级台阶登顶俯瞰（风大）；旁有 Skógar 民俗博物馆与 café。停留 1h。'},
+   {t:'12:25',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Reynisfjara 黑沙滩（Vík）',nav:C.vik,de:'续驾 23 km / 约 20m 抵达；玄武岩柱、海浪大，务必远离浪线（"疯狗浪"致命）！可在 Vík 小镇午餐（Halldórskaffi 等）。停留 1h。'},
+   {t:'14:10',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'入住 Hotel Eyjafjallajökull',nav:C.hvol,de:'返程北驾 53 km / 约 45m 抵达 Hvolsvöllur；酒店旁即 Eyjafjallajökull 火山访客中心（可看 2010 年喷发纪录片）。全天累计约 233 km。'}
   ]},
  {y:2026,mo:10,d:5,color:10,stay:'Hotel Brú countryside（黄金圈）',sum:'黄金圈：议会旧址 / 间歇泉 / 黄金瀑。',
   map:[{n:'Hvolsvöllur',lat:63.7440,lng:-20.2300},{n:'Þingvellir',lat:64.2550,lng:-21.1300},{n:'Geysir',lat:64.3150,lng:-20.3000},{n:'Gullfoss',lat:64.3270,lng:-20.1200},{n:'Brúarholt',lat:64.3300,lng:-20.5000}],
   items:[
-   {t:'上午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Þingvellir 辛格维利尔国家公园',nav:C.thing,de:'板块裂谷、联合国教科文遗产。'},
-   {t:'中午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Geysir 间歇泉',nav:C.geys,de:'Strokkur 每几分钟喷发。'},
-   {t:'下午',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Gullfoss 黄金瀑布',nav:C.gull,de:'双层巨瀑，水雾大。'},
-   {t:'傍晚',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'入住 Hotel Brú',nav:C.bru,de:'Brúarholt，黄金圈内乡村。'},
+   {t:'08:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'退房 Hotel Eyjafjallajökull，沿 1 号公路北行',nav:C.hvol,de:'黄金圈全天自驾约 222 km，各景点停留 1 小时。首段约 2h 较长，建议途经 Selfoss 镇加油 + 咖啡小憩。'},
+   {t:'10:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Þingvellir 辛格维利尔国家公园',nav:C.thing,de:'自 Hvolsvöllur 北驾 145 km / 约 2h 抵达；板块裂谷、联合国教科文遗产，沿木栈道走下裂谷底（约 30–40 min 步行）。停留 1h。'},
+   {t:'11:50',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Geysir 间歇泉',nav:C.geys,de:'续驾 52 km / 约 50m 抵达；Strokkur 每隔 5–10 分钟喷发（提前到观景位抢机位），游客中心可午餐。停留 1h。'},
+   {t:'13:00',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Gullfoss 黄金瀑布',nav:C.gull,de:'续驾 10 km / 约 10m 抵达；双层巨瀑、水雾大，走木栈道到上 / 下观景台，旁有 Gullfoss café。停留 1h。'},
+   {t:'14:12',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'入住 Hotel Brú',nav:C.bru,de:'续驾 12 km / 约 12m 抵达 Brúarholt，黄金圈内乡村；若体力好可傍晚补 Silfra 浮潜，或回程顺路拐 Kerið 火山口湖。全天累计约 222 km。'},
    {t:'可选',tz:'冰岛',tzn:'Atlantic/Reykjavik',ti:'Silfra 丝浮拉浮潜',nav:C.silfra,de:'Þingvellir 大裂缝，需会游泳/持证，必须提前官网预约。',book:true,bookTxt:'需提前官网预约'}
   ]},
  {y:2026,mo:10,d:6,color:11,stay:'KEF / 飞机上过夜（无酒店）',sum:'补漏 + 还车 + 夜飞（提前登机）。',
@@ -551,34 +575,35 @@ const SPOTS={
   '8:2':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
   '8:3':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
   '8:4':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
-  /* Day9（10.4） */
-  '9:0':{wiki:'Keflavík International Airport',intro:'冰岛主机场，租车与离港都在这里。'},
-  '9:1':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
-  '9:2':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
-  '9:3':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
-  '9:4':{wiki:'Aurora',intro:'极光（Aurora），近郊光害更低。'},
-  /* Day10（10.5） */
+  /* Day9（10.3 雷克雅未克） */
+  '9:1':{wiki:'Keflavík International Airport',intro:'雷克雅未克 KEF 抵达，取车自驾。'},
+  '9:2':{wiki:'Keflavík International Airport',intro:'Europcar 取车点，到达大厅步行可达。'},
+  '9:3':{wiki:'Reykjavík',intro:'冰岛首都，世界最北首都之一。'},
+  '9:4':{wiki:'Hallgrímskirkja',intro:'管风琴外形地标教堂，可登顶；旁有 Harpa 音乐厅、市政厅 3D 沙盘。'},
+  '9:5':{wiki:'Aurora',intro:'极光（Aurora），近郊光害更低。'},
+  /* Day10（10.4 南岸） */
   '10:0':{wiki:'Ring Road (Iceland)',intro:'冰岛 1 号环岛公路，南岸风光主线。'},
   '10:1':{wiki:'Seljalandsfoss',intro:'可从水帘后方穿行的瀑布。'},
   '10:2':{wiki:'Skógafoss',intro:'宽瀑，登阶上顶俯瞰。'},
   '10:3':{wiki:'Reynisfjara',intro:'黑沙滩与玄武岩柱，海浪凶险，远离浪线。'},
   '10:4':{wiki:'Eyjafjallajökull',intro:'邻近 2010 年喷发致欧洲空运瘫痪的火山。'},
-  /* Day11（10.6） */
-  '11:0':{wiki:'Þingvellir',intro:'板块裂谷，联合国教科文世界遗产。'},
-  '11:1':{wiki:'Geysir',intro:'Strokkur 间歇泉，每隔几分钟喷发一次。'},
-  '11:2':{wiki:'Gullfoss',intro:'双层黄金瀑布，水雾弥漫。'},
-  '11:3':{wiki:'Golden Circle (Iceland)',intro:'黄金圈，冰岛最经典一日游线路。'},
-  '11:4':{wiki:'Silfra',intro:'板块大裂缝浮潜，水质极清，需提前预约。'},
-  /* Day12（10.7） */
+  /* Day11（10.5 黄金圈） */
+  '11:0':{wiki:'Golden Circle (Iceland)',intro:'黄金圈，冰岛最经典一日游线路。'},
+  '11:1':{wiki:'Þingvellir',intro:'板块裂谷，联合国教科文世界遗产。'},
+  '11:2':{wiki:'Geysir',intro:'Strokkur 间歇泉，每隔几分钟喷发一次。'},
+  '11:3':{wiki:'Gullfoss',intro:'双层黄金瀑布，水雾弥漫。'},
+  '11:4':{wiki:'Golden Circle (Iceland)',intro:'黄金圈乡村，Brúarholt 住宿。'},
+  '11:5':{wiki:'Silfra',intro:'板块大裂缝浮潜，水质极清，需提前预约。'},
+  /* Day12（10.6 还车夜飞） */
   '12:0':{wiki:'Golden Circle (Iceland)',intro:'黄金圈乡村，退房南行。'},
   '12:1':{wiki:'Kerið',intro:'火山口湖，红岩碧水。'},
   '12:2':{wiki:'Keflavík International Airport',intro:'Europcar 还车点，可早还。'},
   '12:3':{wiki:'Keflavík International Airport',intro:'LO500 00:45 起飞，当晚在 KEF/飞机上过夜。'},
-  /* Day13（10.8 转机） */
+  /* Day13（10.7 转机） */
   '13:0':{wiki:'Keflavík International Airport',intro:'雷克雅未克出发，夜飞。'},
   '13:1':{wiki:'Warsaw Chopin Airport',intro:'华沙长转机，机场内休息调整。'},
   '13:2':{wiki:'Warsaw Chopin Airport',intro:'华沙续飞曼谷。'},
-  /* Day14（10.8） */
+  /* Day14（10.8 回家） */
   '14:0':{wiki:'Suvarnabhumi Airport',intro:'曼谷素万那普机场，转机休整。'},
   '14:1':{wiki:'Chengdu Tianfu International Airport',intro:'成都天府国际机场 T1。'},
   '14:2':{wiki:'Chengdu Tianfu International Airport',intro:'旅程圆满结束 🎉'}
@@ -617,18 +642,19 @@ const WEATHER={
 };
 
 const TODO=[
-  '办好申根签证（挪威/冰岛均可，注意总停留天数不超过签证许可）',
-  '购买/确认旅行保险（含医疗与行程取消）',
+  {t:'办好申根签证（挪威/冰岛均可，注意总停留天数不超过签证许可）',done:true},
+  {t:'购买/确认旅行保险（含医疗与行程取消）',done:true},
   '打印或离线保存本手册（手机可直接离线查看）',
-  '准备欧标双圆脚转换头 + 充电宝',
+  {t:'准备欧标双圆脚转换头 + 充电宝',done:true},
   '下载离线地图 & 极光预报 APP（如 Aurora）',
   '挪威段电动车充电规划（Avis ID.3 纯电，沿途 Fortum/IONITY 等）',
   '可选：提前官网预订 Andenes 观鲸团（9月底仍有抹香鲸）',
   '可选：提前官网预订 Silfra 浮潜（需会游泳/持证）',
   '🚡 Fjellheisen 缆车提前一天购票（官网/OTA 选 17:00 后傍晚场看夜景+极光；不支持 Amex，票 7 天有效、天气停运可免费改期）',
+  '📮 旅途寄明信片：每城买 2 张（1 寄 1 自留）；收件地址全中文 + 顶部大字 P.R.CHINA；买【国际航空】邮票；自己去邮局/红色邮筒（勿酒店代寄）；冰岛/特罗姆瑟 2–6 月才到、哥本哈根最快',
+  '⚠️ 盯冰岛航空(Icelandair)机械师罢工：工会 9.15 前出投票结果，若通过≈9.22 起无限期罢工。你飞的 SAS SK2595(10.3 进 KEF) / LOT LO500(10.7 出 KEF) 非冰岛航空，但 KEF 是共享小机场、会被连带延误/取消，开航司 App 推送+备 EasyJet/Wizz/Norse/Finnair 等备选',
   '准备三层保暖衣物 + 防风防水外层（10月夜间体感低 3–5℃）',
   '兑换少量 NOK / ISK 现金（备小额，多数可刷卡）',
-  '检查护照有效期（>6个月）并备齐签证材料（在职/准假证明、银行流水等）',
   '告知银行境外用卡，避免锁卡；开通手机国际漫游或 eSIM'
 ];
 
@@ -640,12 +666,55 @@ const TIPS=[
   {h:'🎒 秋假高峰',t:'挪威秋假约 <b>9.28–10.2</b>，本地家庭出游多，热门餐厅、Fjellheisen 缆车、停车更紧张，建议热门餐厅提前订。'},
   {h:'🚗 冰岛 10 月',t:'高地内陆 F 路已关闭，只看 1 号环岛公路 + 南岸。风速大、天气多变，随时查 <b>road.is</b>（路况）与 <b>vedur.is</b>（天气）。'},
   {h:'🔌 驾驶',t:'挪威靠右行驶；Avis 是纯电 ID.3，沿途规划充电。冰岛 1 号环岛限速 90、砂石路 80，单车道桥/隧道让行。'},
-  {h:'💳 货币',t:'挪威 krone（NOK）、冰岛 króna（ISK），基本 everywhere 刷卡，备一张芯片信用卡/Apple Pay，现金需求低。'},
+  {h:'💳 货币',t:'挪威 krone（NOK）、冰岛 króna（ISK），北欧/冰岛<b>几乎全程刷卡</b>（芯片卡 + Apple Pay/闪付），现金需求极低。⚠️ <b>提前换多少</b>：两人 14 天建议只备小额应急——<b>NOK 1,000–1,500</b>（≈¥720–1,090，留 10/20/50 克朗硬币：超市购物车押金、零星小吃）＋ <b>ISK 10,000–15,000</b>（≈¥550–830，纯应急）；哥本哈根仅过夜中转，现金≈0（1 DKK≈¥1.05）。中国多数银行 ISK 难换，<b>NOK 国内换、ISK 到 KEF 机场 ATM 落地取</b>更划算；也可全程不换、落地 ATM 取小额。带芯片信用卡 + 提前告知银行境外用卡。'},
   {h:'🔌 插座',t:'欧标双圆脚（Type F），带转换头。'},
   {h:'📞 紧急',t:'挪威/冰岛紧急电话均为 <b>112</b>。可提前存中国驻挪威/冰岛使馆领事保护电话。'},
   {h:'📵 离线',t:'本手册可完全离线查看；另建议下载离线地图、保存重要地址电话截图，避免无网时抓瞎。'},
-  {h:'🌿 环保',t:'挪威/冰岛极重视自然，垃圾自带、不打扰野生动物，温泉/景点遵守规则。'}
+  {h:'🌿 环保',t:'挪威/冰岛极重视自然，垃圾自带、不打扰野生动物，温泉/景点遵守规则。'},
+  {h:'📮 旅途寄明信片',t:'四个城市各寄一张，回国陆续收到超有纪念。✍️ <b>怎么写</b>：收件地址<b>全部用中文</b>，顶部大字写 <b>P.R.CHINA</b>，下面完整写中文住址/姓名/手机号（外文邮局只需看懂 CHINA，其余交国内分拣）；背面随手写一句心情+日期，如「2026.9.XX 特罗姆瑟，今夜看见极光」。🛒 <b>怎么买</b>：雷克雅未克 Laugavegur 主街/邮局；Svolvær 小镇纪念品店·超市；特罗姆瑟游客中心（极光主题）；哥本哈根新港 Nyhavn 岸边小店。📮 <b>怎么寄</b>：当地邮局（冰岛 PostOffice / 挪威 Posten / 丹麦 PostNord）买<b>国际航空</b>邮票（别买本土邮票！），柜台交寄或投门口红色邮筒。⚠️ <b>避坑</b>：① 勿酒店代寄（易积压弄丢）；② 每城买 2 张（1 寄 1 自留，北欧丢件概率客观存在）；③ 时间预期 2–4 个月，冰岛/特罗姆瑟更慢（2–6 月），哥本哈根最快，担心丢件可在此多寄一张。'},
+  {h:'⚠️ 冰岛航空罢工风险',t:'2026.9 冰岛航空(Icelandair)机械师工会(FVFI)就薪资投票，<b>9.15 前出结果</b>，若通过约 <b>9.22 起无限期罢工</b>（飞行员工会另有一条纠纷线，调解目标同 9.15）。<b>你直接不受影响</b>：进冰岛 SAS SK2595(10.3 CPH→KEF)、出冰岛 LOT LO500(10.7 KEF→WAW) 均非冰岛航空，冰岛境内是 Europcar 自驾。<b>但有连带风险</b>：KEF 是单跑道小机场、冰岛航空占其过半运力，一旦无限期罢工，全机场拥堵/延误/改签位紧张，会拖到 SAS、LOT 等同场航司——你的 10.3–10.7 窗口正好落在可能罢工期内。<b>应对</b>：① 周一盯投票结果；② 开 SAS/LOT App 航班推送，重点看 SK2595、LO500；③ 确认旅行保险含罢工误机/额外住宿；④ 备备选航司（KEF 还有 EasyJet / Wizz Air / Norse Atlantic / Finnair / 英航 / 美联航等可飞欧陆中转）；⑤ 自驾段不受影响，按原计划。'}
 ];
+
+/* ============ 记账 ============ */
+const PAYERS=['离离','佳佳'];
+// 每笔：{d:日期, who:支付人(离离/佳佳), cat:类别, item:项目, amt:金额(¥)}
+const EXPENSES=[
+  // ⚠️ 以下两条为「出发前换汇」占位记录：金额 / 支付人 / 日期均待你确认后我来改
+  {d:'09.23', who:'离离', cat:'换汇', item:'（占位·待确认）出发前购汇 NOK 1,500', amt:1080, fx:'NOK 1,500'},
+  {d:'09.23', who:'离离', cat:'换汇', item:'（占位·待确认）出发前购汇 ISK 15,000', amt:830, fx:'ISK 15,000'},
+  // 其它消费告诉我：日期 / 项目 / 金额(¥) / 外币(可选) / 谁刷的卡
+];
+function fmtMoney(n){ return '¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function ledStat(n,l){ return '<div class="ledstat"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'; }
+function renderLedger(){
+  const el=document.getElementById('ledgerBox'); if(!el) return;
+  const pay={}; PAYERS.forEach(p=>pay[p]=0);
+  let total=0;
+  EXPENSES.forEach(e=>{ pay[e.who]=(pay[e.who]||0)+e.amt; total+=e.amt; });
+  const half=total/2;
+  let rows;
+  if(EXPENSES.length===0){
+    rows='<div class="ledempty">暂无记账 — 告诉我你支付了什么<br>（日期 / 项目 / 金额 / 谁刷的卡），我来记录 ✍️</div>';
+  }else{
+    rows='<table class="ledtbl"><thead><tr><th>日期</th><th>支付人</th><th>类别</th><th>项目</th><th style="text-align:right">金额</th></tr></thead><tbody>'+
+      EXPENSES.map(e=>'<tr><td>'+(e.d||'')+'</td><td class="who">'+e.who+'</td><td>'+(e.cat||'')+'</td><td>'+(e.item||'')+'</td><td class="amt">'+fmtMoney(e.amt)+(e.fx?'（'+e.fx+'）':'')+'</td></tr>').join('')+
+      '</tbody></table>';
+  }
+  let settle='';
+  if(total>0){
+    const diff=Math.abs((pay['离离']||0)-(pay['佳佳']||0));
+    if(diff<0.005) settle='两人已平摊 ✅';
+    else{
+      const payer=(pay['离离']||0)>(pay['佳佳']||0)?'离离':'佳佳';
+      const other=payer==='离离'?'佳佳':'离离';
+      settle='当前 <b>'+payer+'</b> 多付，结算时 <b>'+other+'</b> 补给 <b>'+payer+'</b> '+fmtMoney(diff/2)+'（两人各应承担 '+fmtMoney(half)+'）。';
+    }
+  }
+  el.innerHTML=
+    '<div class="ledstA">'+ledStat(fmtMoney(total),'累计支出')+ledStat(fmtMoney(half),'累计人均支出')+
+      ledStat(fmtMoney(pay['离离']||0),'离离 已付 (刷卡)')+ledStat(fmtMoney(pay['佳佳']||0),'佳佳 已付 (刷卡)')+'</div>'+
+    (settle?'<div class="ledset">💡 结算建议：'+settle+'</div>':'')+rows;
+}
 
 /* ============ 渲染 ============ */
 function pinHTML(label,coord){
@@ -842,8 +911,8 @@ function renderDays(){
     const transBtn=tr.length?'<button class="maptoggle" onclick="event.stopPropagation();toggleTrans('+idx+')">🚌 交通</button>':'';
     h+='<div class="day" id="day'+idx+'">';
     h+='<div class="dhead" style="background:linear-gradient(135deg,'+col+','+shade(col)+')" onclick="toggleDayCollapse('+idx+')">';
-    h+='<div><div class="dn"><span class="chev">▾</span>第 '+dayNum+' 天 · '+dateStr+' '+wd+'</div><div class="dd">'+day.sum+'</div></div>';
-    h+='<div style="display:flex;align-items:center;gap:6px"><span class="stay">🛏 '+day.stay+'</span>'+
+    h+='<div><div class="dn"><span class="chev">▾</span>第 '+dayNum+' 天 · '+dateStr+' '+wd+'</div><div class="stay" style="margin-top:4px;display:inline-block">🛏 '+day.stay+'</div><div class="dd">'+day.sum+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:6px">'+
        '<button class="maptoggle" onclick="event.stopPropagation();toggleDayMap('+idx+')">📍 路线</button>'+transBtn+'</div>';
     h+='</div>';
     h+='<div class="body">'+weatherHTML+transHTML+'<div class="summary">'+day.sum+'</div>'+items+
@@ -926,7 +995,10 @@ function shade(hex){
 }
 
 // 待办
-function renderTodo(){ document.getElementById('todoList').innerHTML=TODO.map(t=>'<li>'+t+'</li>').join(''); }
+function renderTodo(){ document.getElementById('todoList').innerHTML=TODO.map(t=>{
+  if(typeof t==='object'&&t.done) return '<li class="done">'+t.t+'</li>';
+  return '<li>'+(typeof t==='object'?t.t:t)+'</li>';
+}).join(''); }
 
 // 贴士
 function renderTips(){ document.getElementById('tips').innerHTML=TIPS.map(t=>'<div class="tip"><div class="h">'+t.h+'</div>'+t.t+'</div>').join(''); }
@@ -949,6 +1021,7 @@ renderOverview();
 renderDays();
 renderTodo();
 renderTips();
+renderLedger();
 </script>
 </body>
 </html>
